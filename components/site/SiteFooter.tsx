@@ -43,7 +43,6 @@ export function SiteFooter({
   return (
     <footer className="grain relative mt-24 overflow-hidden bg-navy text-cream/85">
       <div aria-hidden="true" className="footer-weave" />
-      <div className="band-beads" aria-hidden="true" />
       <div className="container-hb grid gap-12 py-16 sm:grid-cols-2 lg:grid-cols-[1.25fr_1fr_1fr_1.2fr] lg:gap-10">
         <div className="flex flex-col gap-5 sm:col-span-2 lg:col-span-1">
           <Logo src={logo} tone="light" />

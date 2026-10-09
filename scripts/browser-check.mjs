@@ -230,7 +230,7 @@ async function main() {
     check('footer links are grouped and reduced to 11', footerLinkCount === 11, `${footerLinkCount} links`);
     const footerIconCount = await page.$$eval('footer nav li svg', (els) => els.length);
     check('footer carries four contact icons and the Facebook, Instagram and TikTok icons', footerIconCount === 7, `${footerIconCount} icons`);
-    check('footer edge is the beaded band', Boolean(await page.$('footer .band-beads')));
+    check('footer has no second vector below the weave', !(await page.$('footer .band-beads')));
     const wovenTop = await page.$eval('footer .footer-weave', (el) => el.getBoundingClientRect().top - el.closest('footer').getBoundingClientRect().top);
     const weaveBg = await page.$eval('footer .footer-weave', (el) => getComputedStyle(el).backgroundColor);
     check('footer weave is transparent and only at the top', (await page.$$('footer .footer-weave')).length === 1 && wovenTop < 4 && (weaveBg === 'rgba(0, 0, 0, 0)' || weaveBg === 'transparent'), `top offset ${Math.round(wovenTop)}px, background ${weaveBg}`);
