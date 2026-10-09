@@ -49,10 +49,13 @@ export function HeritageWheel({ items }: { items: WheelItem[] }) {
 
   return (
     <div className="grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]">
-      <div className="relative mx-auto aspect-square w-full max-w-[460px]" aria-hidden="true">
-        <div className="absolute left-1/2 top-0 z-20 h-0 w-0 -translate-x-1/2 -translate-y-2 border-x-[16px] border-b-[28px] border-x-transparent border-b-ochre drop-shadow-md" />
+      <div className="relative mx-auto aspect-square w-full max-w-[460px]">
+        <div aria-hidden="true" className="absolute left-1/2 top-0 z-20 h-0 w-0 -translate-x-1/2 -translate-y-2 border-x-[16px] border-b-[28px] border-x-transparent border-b-ochre drop-shadow-md" />
+        {/* Tapping anywhere on the disc spins it. The centre button does the same for keyboard users. */}
         <div
-          className="absolute inset-0 rounded-full shadow-lift transition-transform ease-[cubic-bezier(.12,.7,.1,1)]"
+          aria-hidden="true"
+          onClick={spin}
+          className="absolute inset-0 cursor-pointer rounded-full shadow-lift transition-transform ease-[cubic-bezier(.12,.7,.1,1)]"
           style={{
             background: count ? `conic-gradient(${gradient})` : '#001938',
             transform: `rotate(${rotation}deg)`,
@@ -75,9 +78,17 @@ export function HeritageWheel({ items }: { items: WheelItem[] }) {
             );
           })}
         </div>
-        <div className="absolute left-1/2 top-1/2 z-10 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-cream bg-navy text-center">
-          <span className="font-script text-2xl leading-none text-ochre-bright">spin</span>
-        </div>
+        <button
+          type="button"
+          onClick={spin}
+          disabled={spinning || count < 2}
+          aria-label="Spin the pot"
+          className="absolute left-1/2 top-1/2 z-10 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border-4 border-cream bg-navy text-center shadow-soft transition hover:bg-navy-soft disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          <span aria-hidden="true" className="font-script text-2xl leading-none text-ochre-bright">
+            spin
+          </span>
+        </button>
       </div>
 
       <div className="flex flex-col gap-6">

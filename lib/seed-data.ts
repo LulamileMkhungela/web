@@ -454,6 +454,8 @@ export const DEFAULT_SETTINGS = {
   // Placeholder hours: confirm in the staff console.
   hours: [DEFAULT_OPEN, DEFAULT_OPEN, DEFAULT_OPEN, DEFAULT_OPEN, DEFAULT_OPEN, DEFAULT_OPEN, DEFAULT_OPEN],
   storeLinks: { ...DEFAULT_STORE_LINKS },
+  // Empty until the owner pastes real page links in staff Settings. No icon shows until then.
+  social: { facebook: '', instagram: '', tiktok: '' },
   prep: { baseMinutes: 12, perOpenOrderMinutes: 2, maxMinutes: 60 },
   contact: { phone: BRAND.phoneDisplay, whatsapp: BRAND.whatsappNumber, email: BRAND.email },
   checklist: {

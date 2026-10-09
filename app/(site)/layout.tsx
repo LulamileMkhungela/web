@@ -23,7 +23,7 @@ export default function SiteLayout({ children }: { children: ReactNode }) {
       <main id="main" tabIndex={-1} className="outline-none">
         {children}
       </main>
-      <SiteFooter logo={logos.white} contact={settings.contact} />
+      <SiteFooter logo={logos.white} contact={settings.contact} social={settings.social} />
       <CartDrawer />
       <BottomNav />
       <BackToTop />

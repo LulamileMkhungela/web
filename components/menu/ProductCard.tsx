@@ -14,6 +14,7 @@ export function ProductCard({ item, eager = false }: { item: MenuItem; eager?: b
   return (
     <article id={`item-${item.id}`} className="card flex h-full flex-col overflow-hidden">
       <ImageCarousel images={item.images} alt={item.name} priority={eager} />
+      <div aria-hidden="true" className="kasi-strip" />
       <div className="flex flex-1 flex-col gap-3 p-5 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">

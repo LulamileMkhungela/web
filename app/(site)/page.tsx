@@ -1,13 +1,11 @@
 import Link from 'next/link';
 import { CategoryTiles } from '@/components/home/CategoryTiles';
-import { EnquiryBand } from '@/components/home/EnquiryBand';
 import { Hero } from '@/components/home/Hero';
 import { HeritageWheel, type WheelItem } from '@/components/home/HeritageWheel';
 import type { HeroSlide } from '@/components/home/HeroSlides';
 import { SpecialsTicker } from '@/components/home/SpecialsTicker';
 import { SpecialsGrid, specialCardData } from '@/components/home/TodaySpecials';
 import { StoryTeaser } from '@/components/home/StoryTeaser';
-import { VisitBlock } from '@/components/home/VisitBlock';
 import { WaysToOrder } from '@/components/home/WaysToOrder';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { LONG_DAYS } from '@/lib/config';
@@ -114,10 +112,6 @@ export default function HomePage() {
       </section>
 
       <StoryTeaser />
-
-      <EnquiryBand />
-
-      <VisitBlock hours={settings.hours} contact={settings.contact} />
     </>
   );
 }

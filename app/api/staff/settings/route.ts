@@ -18,6 +18,7 @@ export async function PUT(request: NextRequest) {
   const data = parsed.data;
   if (data.hours) saveSetting('hours', data.hours);
   if (data.storeLinks) saveSetting('storeLinks', data.storeLinks);
+  if (data.social) saveSetting('social', data.social);
   if (data.prep) saveSetting('prep', data.prep);
   if (data.contact) saveSetting('contact', data.contact);
   if (data.checklist) saveSetting('checklist', data.checklist);

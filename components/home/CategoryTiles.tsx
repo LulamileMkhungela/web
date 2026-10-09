@@ -7,7 +7,7 @@ export function CategoryTiles({ categories }: { categories: MenuCategory[] }) {
   return (
     <section aria-labelledby="categories-heading" className="container-hb pb-16 md:pb-24">
       <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-        <SectionHeading id="categories-heading" kicker="Everything we serve" script="The full table" title="Every category on our menu" />
+        <SectionHeading id="categories-heading" kicker="Everything we serve" script="The full menu" title="Every category on our menu" />
         <Link href="/menu" className="btn btn-navy self-start md:self-auto">
           View the full menu
         </Link>

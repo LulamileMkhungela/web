@@ -16,14 +16,13 @@ type Props = {
   isOpen: boolean;
   statusDetail: string;
   initialChannel: 'website' | 'whatsapp';
-  cancelled: boolean;
   etaMinutes: number;
   storeLinks: { ubereats: string; mrd: string };
 };
 
 const METHODS: { id: Method; title: string; body: string }[] = [
   { id: 'card', title: 'Debit card', body: 'Test payment: any card details are accepted and nothing is charged.' },
-  { id: 'yoco', title: 'Yoco', body: 'Approve a test payment on a Yoco checkout page.' },
+  { id: 'yoco', title: 'Yoco', body: 'Pay by card through Yoco. Test payment: any card details are accepted and nothing is charged.' },
   { id: 'counter', title: 'Pay at the counter', body: 'Pay when you collect your order.' },
   { id: 'whatsapp', title: 'WhatsApp', body: 'We confirm your order and how you pay with you on WhatsApp.' },
 ];
@@ -34,7 +33,6 @@ export function CheckoutForm({
   isOpen,
   statusDetail,
   initialChannel,
-  cancelled,
   etaMinutes,
   storeLinks,
 }: Props) {
@@ -57,6 +55,8 @@ export function CheckoutForm({
   const [pickup, setPickup] = useState(pickupOptions[0]?.value ?? '');
   const [method, setMethod] = useState<Method>(initialChannel === 'whatsapp' ? 'whatsapp' : 'card');
   const [card, setCard] = useState({ number: '', name: '', expiry: '', cvc: '' });
+  /** Yoco takes the same card fields as the debit card option, styled in Yoco's colours. */
+  const fieldClass = method === 'yoco' ? 'field yoco-field' : 'field';
   const [submitting, setSubmitting] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -75,7 +75,7 @@ export function CheckoutForm({
       notes,
       lines: cart.lines.map((line) => ({ key: line.key, qty: line.qty })),
       expectedTotalCents: cart.totalCents,
-      payment: method === 'card' ? { method: 'card', card } : { method: method === 'yoco' ? 'yoco' : 'counter' },
+      payment: method === 'card' || method === 'yoco' ? { method, card } : { method: 'counter' },
     };
     try {
       const res = await fetch('/api/orders', {
@@ -165,7 +165,7 @@ export function CheckoutForm({
     : method === 'whatsapp'
       ? `Continue on WhatsApp · ${formatZAR(total)}`
       : method === 'yoco'
-        ? `Continue to Yoco · ${formatZAR(total)}`
+        ? `Pay with Yoco · ${formatZAR(total)}`
         : `Place order · ${formatZAR(total)}`;
 
   return (
@@ -213,13 +213,6 @@ export function CheckoutForm({
       </aside>
 
       <form onSubmit={placeOrder} className="order-2 flex flex-col gap-6 lg:order-1">
-        {cancelled ? (
-          <div role="status" className="rounded-2xl bg-ochre-wash p-5 text-navy">
-            Your Yoco payment was cancelled. Your order was not placed, and your cart is still saved. Choose a payment
-            method to try again.
-          </div>
-        ) : null}
-
         <section className="card p-6 sm:p-7" aria-labelledby="details-heading">
           <h2 id="details-heading" className="text-2xl font-bold">
             Your details
@@ -342,15 +335,27 @@ export function CheckoutForm({
             })}
           </fieldset>
 
-          {method === 'card' ? (
-            <div className="mt-5 grid gap-5 rounded-2xl bg-cream p-5 sm:grid-cols-2">
+          {method === 'card' || method === 'yoco' ? (
+            <div
+              className={
+                method === 'yoco'
+                  ? 'yoco-panel mt-5 grid gap-5 rounded-2xl p-5 sm:grid-cols-2'
+                  : 'mt-5 grid gap-5 rounded-2xl bg-cream p-5 sm:grid-cols-2'
+              }
+            >
+              {method === 'yoco' ? (
+                <div className="flex items-center justify-between gap-4 sm:col-span-2">
+                  <span className="yoco-wordmark">yoco</span>
+                  <span className="yoco-badge">Test mode</span>
+                </div>
+              ) : null}
               <p className="text-sm sm:col-span-2">
                 Test payment: you can type anything here. Nothing is charged or stored.
               </p>
               <Field id={cardNumberId} label="Card number" className="sm:col-span-2">
                 <input
                   id={cardNumberId}
-                  className="field"
+                  className={fieldClass}
                   inputMode="numeric"
                   autoComplete="cc-number"
                   placeholder="1234 5678 9012 3456"
@@ -362,7 +367,7 @@ export function CheckoutForm({
               <Field id={cardNameId} label="Name on card" className="sm:col-span-2">
                 <input
                   id={cardNameId}
-                  className="field"
+                  className={fieldClass}
                   autoComplete="cc-name"
                   maxLength={80}
                   value={card.name}
@@ -372,7 +377,7 @@ export function CheckoutForm({
               <Field id={expiryId} label="Expiry (MM/YY)">
                 <input
                   id={expiryId}
-                  className="field"
+                  className={fieldClass}
                   autoComplete="cc-exp"
                   placeholder="MM/YY"
                   maxLength={10}
@@ -383,7 +388,7 @@ export function CheckoutForm({
               <Field id={cvcId} label="CVC">
                 <input
                   id={cvcId}
-                  className="field"
+                  className={fieldClass}
                   inputMode="numeric"
                   autoComplete="cc-csc"
                   maxLength={6}

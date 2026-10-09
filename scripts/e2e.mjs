@@ -111,32 +111,29 @@ async function main() {
   check('public tracking hides phone and email', cardOrder?.customerPhone === '' && cardOrder?.customerEmail === '');
   check('order lines are stored', cardOrder?.lines?.length === 2);
 
-  console.log('\nYoco checkout (simulated) approve and cancel');
-  const yocoOrder = await call('/api/orders', {
-    method: 'POST',
-    body: { channel: 'website', fulfilment: 'collection', pickup: pickupLater(11), customer, lines: [{ key: 'item:samp-beans', qty: 1 }], payment: { method: 'yoco' } },
-  });
-  check('yoco order starts a checkout session', String(yocoOrder.data?.redirectUrl).startsWith('/pay/yoco/yco_'), JSON.stringify(yocoOrder.data));
-  const yocoId = String(yocoOrder.data?.redirectUrl).split('/').pop();
-  const session = await call(`/api/payments/yoco/${yocoId}`);
-  check('checkout session shows pending amount', session.data?.checkout?.status === 'pending' && session.data?.checkout?.amountCents === 4500);
-  const approve = await call(`/api/payments/yoco/${yocoId}`, { method: 'POST', body: { action: 'approve' } });
-  check('approving redirects to the order page', String(approve.data?.redirectUrl).startsWith('/order/'));
-  const approvedOrder = (await call(`/api/orders/${session.data?.checkout?.orderToken}`)).data?.order;
-  check('approved yoco order is paid and sent to the kitchen', approvedOrder?.paymentStatus === 'paid' && approvedOrder?.status === 'new');
-  const again = await call(`/api/payments/yoco/${yocoId}`, { method: 'POST', body: { action: 'cancel' } });
-  check('a completed checkout cannot be cancelled afterwards', again.data?.state === 'succeeded');
-
-  const yocoCancel = await call('/api/orders', {
-    method: 'POST',
-    body: { channel: 'website', fulfilment: 'collection', pickup: pickupLater(12), customer, lines: [{ key: 'item:chakalaka', qty: 1 }], payment: { method: 'yoco' } },
-  });
-  const cancelId = String(yocoCancel.data?.redirectUrl).split('/').pop();
-  const cancelled = await call(`/api/payments/yoco/${cancelId}`, { method: 'POST', body: { action: 'cancel' } });
-  check('cancelling returns to checkout with a notice', cancelled.data?.redirectUrl === '/checkout?cancelled=1');
-  const cancelSession = await call(`/api/payments/yoco/${cancelId}`);
-  const cancelledOrder = (await call(`/api/orders/${cancelSession.data?.checkout?.orderToken}`)).data?.order;
-  check('cancelled yoco order is marked cancelled', cancelledOrder?.status === 'cancelled' && cancelledOrder?.paymentStatus === 'cancelled');
+  console.log('\nYoco takes the same card fields and is approved at once');
+  const yocoBody = {
+    channel: 'website',
+    fulfilment: 'collection',
+    pickup: pickupLater(11),
+    customer,
+    lines: [{ key: 'item:samp-beans', qty: 1 }],
+    payment: { method: 'yoco', card: { number: '5555 5555 5555 4444', name: 'Yoco Demo', expiry: '12/30', cvc: '123' } },
+  };
+  const yocoOrder = await call('/api/orders', { method: 'POST', body: yocoBody });
+  check('yoco order is created (201)', yocoOrder.status === 201, JSON.stringify(yocoOrder.data));
+  check('yoco order goes straight to its tracking page', yocoOrder.data?.redirectUrl === `/order/${yocoOrder.data?.token}`, String(yocoOrder.data?.redirectUrl));
+  const yocoView = (await call(`/api/orders/${yocoOrder.data?.token}`)).data?.order;
+  check(
+    'yoco order is paid and sent to the kitchen',
+    yocoView?.paymentStatus === 'paid' && yocoView?.status === 'new' && yocoView?.paymentMethod === 'yoco',
+    JSON.stringify({ s: yocoView?.status, p: yocoView?.paymentStatus, m: yocoView?.paymentMethod }),
+  );
+  check('yoco order keeps only the brand and last four digits', yocoView?.cardLast4 === '4444' && yocoView?.cardBrand === 'Mastercard');
+  check('yoco order has its own payment reference', String(yocoView?.paymentRef).startsWith('YOCO-'));
+  check('yoco order records the approval', (yocoView?.events ?? []).some((e) => e.note === 'Yoco payment approved (demo)'));
+  const yocoHosted = await call('/api/payments/yoco/yco_missing');
+  check('the old hosted Yoco page endpoint is gone', yocoHosted.status === 404, `status ${yocoHosted.status}`);
 
   console.log('\nPay at counter, WhatsApp and dine-in');
   const counter = await call('/api/orders', {
@@ -187,10 +184,10 @@ async function main() {
   check('ready → collected', (await step('collected')).status === 200);
   check('collected cannot go back to preparing', (await step('preparing')).status === 409);
 
-  const yocoPaid = seen.find((o) => o.id === approvedOrder?.id);
-  const refund = await call(`/api/staff/orders/${approvedOrder?.id}`, { method: 'PATCH', body: { status: 'cancelled', note: 'Customer changed mind' }, cookie });
+  const yocoPaid = seen.find((o) => o.id === yocoView?.id);
+  const refund = await call(`/api/staff/orders/${yocoView?.id}`, { method: 'PATCH', body: { status: 'cancelled', note: 'Customer changed mind' }, cookie });
   check('cancelling a paid order marks a refund due', refund.status === 200 && refund.data?.order?.paymentStatus === 'refund_due', JSON.stringify(refund.data));
-  check('approved order was visible to staff', Boolean(yocoPaid));
+  check('yoco order was visible to staff', Boolean(yocoPaid));
 
   const manual = await call('/api/staff/orders', {
     method: 'POST',
@@ -233,6 +230,25 @@ async function main() {
   const saved = await call('/api/staff/settings', { method: 'PUT', cookie, body: { storeLinks: { ubereats: 'https://www.ubereats.com/za/store/heritage-bites-test', mrd: originalLinks.mrd } } });
   check('settings can be saved', saved.status === 200 && saved.data?.settings?.storeLinks?.ubereats.includes('heritage-bites-test'));
   await call('/api/staff/settings', { method: 'PUT', cookie, body: { storeLinks: originalLinks } });
+
+  console.log('\nSocial media links');
+  check('social links start blank', JSON.stringify(settings.data?.settings?.social) === JSON.stringify({ facebook: '', instagram: '', tiktok: '' }), JSON.stringify(settings.data?.settings?.social));
+  const badSocial = await call('/api/staff/settings', { method: 'PUT', cookie, body: { social: { facebook: 'facebook.com/heritagebites', instagram: '', tiktok: '' } } });
+  check('a social link without https:// is refused', badSocial.status === 422, `status ${badSocial.status}`);
+  const wrongSite = await call('/api/staff/settings', { method: 'PUT', cookie, body: { social: { facebook: 'https://www.instagram.com/heritagebites-test', instagram: '', tiktok: '' } } });
+  check('a Facebook field cannot hold a link to another site', wrongSite.status === 422, `status ${wrongSite.status}`);
+  const goodSocial = await call('/api/staff/settings', {
+    method: 'PUT',
+    cookie,
+    body: { social: { facebook: 'https://www.facebook.com/heritagebites-test', instagram: 'https://www.instagram.com/heritagebites-test', tiktok: '' } },
+  });
+  check('a full social link is saved', goodSocial.status === 200 && goodSocial.data?.settings?.social?.facebook.includes('heritagebites-test'));
+  const homeWithSocial = await fetch(`${BASE}/`).then((r) => r.text());
+  check('footer shows the Facebook and Instagram icons once their links are saved', homeWithSocial.includes('href="https://www.facebook.com/heritagebites-test"') && homeWithSocial.includes('href="https://www.instagram.com/heritagebites-test"'));
+  check('no TikTok icon while its link is blank', !homeWithSocial.includes('tiktok.com/'));
+  await call('/api/staff/settings', { method: 'PUT', cookie, body: { social: { facebook: '', instagram: '', tiktok: '' } } });
+  const homeWithout = await fetch(`${BASE}/`).then((r) => r.text());
+  check('icons disappear again once the links are cleared', !homeWithout.includes('heritagebites-test'));
 
   console.log('\nEnquiries');
   const contact = await call('/api/messages', { method: 'POST', body: { type: 'contact', name: 'Test Visitor', phone: '0821234567', message: 'Do you have chakalaka today?' } });

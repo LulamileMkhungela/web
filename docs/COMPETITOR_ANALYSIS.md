@@ -59,7 +59,7 @@ Each row says what we saw on competitors (or "not seen on the pages reviewed") a
 |---|---|---|
 | Buttons that do not add to a basket | Africa Cuisine, Foodie Zone | A real basket with "Add to cart" and "Order" on every dish. Checkout re-prices everything on the server. |
 | Deals locked in an app | Steers | A weekly planner and time-window specials on the website. Specials go into the basket at the special price. |
-| Broken map and catering pages | Africa Cuisine (`about:invalid`), Mkhaya (PHP error) | A working map and directions link. Enquiry forms for events, bookings and office lunches. A health endpoint. A link checker runs as part of the test suite. |
+| Broken map and catering pages | Africa Cuisine (`about:invalid`), Mkhaya (PHP error) | A working map and directions link on the contact page. A health endpoint. A link checker runs as part of the test suite. The site offers no events, office lunches or table bookings, so there are no forms for them. |
 | No order tracking | Not seen on the pages reviewed | A tracking page with a status timeline, auto-refresh, a printable receipt and "Order again". |
 | No pickup scheduling | Not seen on the pages reviewed | Pickup slots inside opening hours, with a kitchen wait estimate based on the orders already in progress. |
 | Sold-out dishes not reflected online | Not seen on the pages reviewed | A staff toggle hides a dish on the site and in search straight away, and blocks it at checkout. |

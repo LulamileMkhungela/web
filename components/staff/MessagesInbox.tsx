@@ -48,7 +48,7 @@ export function MessagesInbox({ messages }: { messages: MessageView[] }) {
         <div>
           <p className="kicker">Enquiries</p>
           <h1 id="inbox-heading" className="mt-1 text-4xl font-bold text-navy">
-            Contact form, events, bookings and specials
+            Contact form messages and specials sign-ups
           </h1>
         </div>
         <div role="tablist" aria-label="Filter enquiries" className="flex gap-2">

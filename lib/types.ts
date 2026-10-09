@@ -11,6 +11,9 @@ export type DayHours = { open: string; close: string } | null;
 /** Index 0 = Sunday ... 6 = Saturday. */
 export type Hours = DayHours[];
 export type StoreLinks = { ubereats: string; mrd: string };
+
+/** Full https:// page links. A blank link hides its icon on the website. */
+export type SocialLinks = { facebook: string; instagram: string; tiktok: string };
 export type PrepSettings = { baseMinutes: number; perOpenOrderMinutes: number; maxMinutes: number };
 export type ContactSettings = { phone: string; whatsapp: string; email: string };
 export type ChecklistKey =
@@ -25,6 +28,7 @@ export type Checklist = Record<ChecklistKey, boolean>;
 export type SiteSettings = {
   hours: Hours;
   storeLinks: StoreLinks;
+  social: SocialLinks;
   prep: PrepSettings;
   contact: ContactSettings;
   checklist: Checklist;

@@ -20,6 +20,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
   const ids = useId();
   const [hours, setHours] = useState<Hours>(settings.hours);
   const [storeLinks, setStoreLinks] = useState(settings.storeLinks);
+  const [social, setSocial] = useState(settings.social);
   const [prep, setPrep] = useState(settings.prep);
   const [contact, setContact] = useState(settings.contact);
   const [checklist, setChecklist] = useState<Checklist>(settings.checklist);
@@ -42,7 +43,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
     const res = await fetch('/api/staff/settings', {
       method: 'PUT',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ hours, storeLinks, prep, contact, checklist }),
+      body: JSON.stringify({ hours, storeLinks, social, prep, contact, checklist }),
     });
     const data = (await res.json()) as { error?: string };
     setSaving(false);
@@ -157,6 +158,21 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
             </Field>
             <Field id={`${ids}-mrd`} label="Mr D store link" hint="Paste the full link to your Mr D store page.">
               <input id={`${ids}-mrd`} className="field" value={storeLinks.mrd} onChange={(e) => setStoreLinks({ ...storeLinks, mrd: e.target.value })} />
+            </Field>
+          </div>
+          <div className="flex flex-col gap-5">
+            <h2 className="font-display text-2xl font-bold text-navy">Social media</h2>
+            <p className="text-sm text-muted">
+              Paste the full link to each page. An icon appears on the website only when its link is filled in.
+            </p>
+            <Field id={`${ids}-facebook`} label="Facebook page link" hint="For example https://www.facebook.com/yourpage">
+              <input id={`${ids}-facebook`} className="field" placeholder="https://" value={social.facebook} onChange={(e) => setSocial({ ...social, facebook: e.target.value })} />
+            </Field>
+            <Field id={`${ids}-instagram`} label="Instagram profile link" hint="For example https://www.instagram.com/yourprofile">
+              <input id={`${ids}-instagram`} className="field" placeholder="https://" value={social.instagram} onChange={(e) => setSocial({ ...social, instagram: e.target.value })} />
+            </Field>
+            <Field id={`${ids}-tiktok`} label="TikTok profile link" hint="For example https://www.tiktok.com/@yourprofile">
+              <input id={`${ids}-tiktok`} className="field" placeholder="https://" value={social.tiktok} onChange={(e) => setSocial({ ...social, tiktok: e.target.value })} />
             </Field>
           </div>
           <div className="flex flex-col gap-5">

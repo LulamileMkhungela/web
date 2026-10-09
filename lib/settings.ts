@@ -1,6 +1,6 @@
 import { getDb, get, run } from './db';
 import { DEFAULT_SETTINGS } from './seed-data';
-import type { Checklist, ContactSettings, Hours, PrepSettings, SiteSettings, StoreLinks } from './types';
+import type { Checklist, ContactSettings, Hours, PrepSettings, SiteSettings, SocialLinks, StoreLinks } from './types';
 
 type SettingKey = keyof typeof DEFAULT_SETTINGS;
 
@@ -19,6 +19,7 @@ export function getSiteSettings(): SiteSettings {
   return {
     hours: read('hours') as Hours,
     storeLinks: read('storeLinks') as StoreLinks,
+    social: read('social') as SocialLinks,
     prep: read('prep') as PrepSettings,
     contact: read('contact') as ContactSettings,
     checklist: read('checklist') as Checklist,

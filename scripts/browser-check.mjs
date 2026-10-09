@@ -162,7 +162,25 @@ async function main() {
     await sleep(1000);
     const scrolledY = await page.evaluate(() => window.scrollY);
     check('back to top returns to the top', scrolledY < 40, `scrollY ${scrolledY}`);
+    const homeText = await page.$eval('main', (m) => m.innerText);
+    check('home has no events, office lunch or table booking offer', !/Beyond the counter|plan something together|Book a table|Visit us|office lunch/i.test(homeText));
+    check('home has no map block (the map lives on the contact page)', !(await page.$('iframe[title^="Map showing"]')));
+    check('home has no topic links into the contact form', !homeLinks.some((h) => h.includes('/contact?topic')));
     await shot(page, '01-home-desktop');
+
+    console.log('\nSpin the pot');
+    const hubSpin = await page.$('button[aria-label="Spin the pot"]');
+    check('the spin button is inside the wheel', Boolean(hubSpin));
+    await hubSpin.click();
+    await page.waitForFunction(() => document.body.textContent.includes('The pot says'), { timeout: 20000 });
+    check('clicking the centre of the wheel spins it to a dish', true);
+    await page.evaluate(() => document.querySelector('[aria-label="Spin the pot"]')?.closest('div.relative')?.scrollIntoView({ block: 'center' }));
+    await sleep(300);
+    const disc = await page.$('div[aria-hidden="true"].cursor-pointer');
+    const box = await disc.boundingBox();
+    await page.mouse.click(box.x + box.width * 0.5, box.y + box.height * 0.2);
+    await page.waitForFunction(() => document.body.textContent.includes('The pot says'), { timeout: 20000 });
+    check('clicking the wheel itself also spins it', true);
     await shot(page, '02-home-full', true);
 
     console.log('\nHome: ticker, today\'s specials, footer');
@@ -213,9 +231,13 @@ async function main() {
     const footerIconCount = await page.$$eval('footer nav li svg', (els) => els.length);
     check('footer visit and contact lines carry icons', footerIconCount === 4, `${footerIconCount} icons`);
     check('footer edge is the beaded band', Boolean(await page.$('footer .band-beads')));
+    check('no social icons until a Facebook, Instagram or TikTok link is saved', (await page.$$('footer a[href*="facebook.com"], footer a[href*="instagram.com"], footer a[href*="tiktok.com"]')).length === 0);
 
     console.log('\nMenu and product photos');
     await go(page, '/menu');
+    const kasiStrips = await page.$$eval('.kasi-strip', (els) => els.length);
+    check('menu carries the heritage strip on every card and category header', kasiStrips >= 26, `${kasiStrips} strips`);
+    check('menu header carries the kasi artwork', Boolean(await page.$('.kasi-panel')));
     const cardIds = await page.$$eval('article[id^="item-"]', (els) => els.map((e) => e.id));
     check('menu lists all 20 dishes', cardIds.length === 20, `${cardIds.length}`);
     const sectionIds = await page.$$eval('section[id^="category-"]', (els) => els.map((e) => e.id));
@@ -306,7 +328,21 @@ async function main() {
     await page.keyboard.press('Backspace');
     await page.waitForFunction(() => document.querySelectorAll('article[id^="item-"]').length === 20, { timeout: 8000 });
 
+    const pillState = () =>
+      page.$eval('button.cart-pill', (b) => ({
+        count: Number(b.querySelector('.cart-count')?.textContent ?? 0),
+        filled: b.dataset.filled === 'true',
+        bg: getComputedStyle(b).backgroundColor,
+      }));
+    await page.evaluate(() => localStorage.removeItem('hb-cart-v1'));
+    await page.reload({ waitUntil: 'networkidle0' });
+    await page.waitForSelector('button.cart-pill');
+    const pillEmpty = await pillState();
+    check('empty cart button is outlined, not filled', pillEmpty.count === 0 && !pillEmpty.filled && pillEmpty.bg === 'rgba(0, 0, 0, 0)', JSON.stringify(pillEmpty));
     await clickIn(page, '#item-mogodu-samp', 'Add to cart');
+    await page.waitForFunction(() => document.querySelector('button.cart-pill')?.dataset.filled === 'true', { timeout: 8000 });
+    const pillFull = await pillState();
+    check('cart button fills navy once a dish is added', pillFull.count === 1 && pillFull.filled && pillFull.bg === 'rgb(0, 25, 56)', JSON.stringify(pillFull));
     const storedAfterAdd = await page.evaluate(() => JSON.parse(localStorage.getItem('hb-cart-v1') || '[]'));
     check('Add to cart stores Mogodu & Samp', storedAfterAdd.some((l) => l.key === 'item:mogodu-samp'));
     const solidAfterAdd = await page.$$eval('#item-mogodu-samp button', (buttons) =>
@@ -359,13 +395,13 @@ async function main() {
     await page.type('input[autocomplete="name"]', 'Yoco Shopper');
     await page.type('input[autocomplete="tel"]', '0821234567');
     await page.click('input[name="payment"][value="yoco"]');
+    check('Yoco shows the card fields inside a Yoco panel', (await page.$$('.yoco-panel input[autocomplete="cc-number"]')).length === 1 && (await page.$$('.yoco-panel input')).length === 4);
+    check('Yoco button says Pay with Yoco', (await page.$eval('form button[type="submit"]', (b) => b.textContent)).includes('Pay with Yoco'));
+    await page.type('.yoco-panel input[autocomplete="cc-number"]', '4111 1111 1111 1111');
     await page.click('form button[type="submit"]');
-    await waitForPath(page, '/pay/yoco/', 60000);
-    check('Yoco opens the simulated checkout page', page.url().includes('/pay/yoco/yco_'));
-    await shot(page, '06-yoco-simulated');
-    await page.click('button.btn-ochre');
     await waitForPath(page, '/order/', 60000);
-    check('approving the Yoco payment shows the order', /^HB-/.test(await page.$eval('h1', (h) => h.textContent.trim())));
+    check('Yoco payment places the order straight away', /^HB-/.test(await page.$eval('h1', (h) => h.textContent.trim())));
+    await shot(page, '06-yoco-payment', true);
 
     await go(page, '/menu');
     await clickIn(page, '#item-chakalaka', 'Add to cart');
@@ -397,18 +433,16 @@ async function main() {
     const form = 'form[aria-labelledby="contact-form-heading"]';
     const contactHeights = await fieldHeights(page, `${form} input.field, ${form} select.field`);
     check('contact form fields share one height', new Set(contactHeights).size === 1, JSON.stringify([...new Set(contactHeights)]));
-    await page.select(`${form} select.field`, 'catering');
-    check('catering shows event date and guests', (await page.$$(`${form} input[type="date"]`)).length === 1 && (await page.$$(`${form} input[type="number"]`)).length === 1);
-    await page.select(`${form} select.field`, 'table');
-    check('table booking shows date, time and people', (await page.$$(`${form} input[type="date"]`)).length === 1 && (await page.$$(`${form} input[type="time"]`)).length === 1);
-    await page.select(`${form} select.field`, 'general');
+    check('contact form has no topic picker, event or booking fields', (await page.$$(`${form} select`)).length === 0 && (await page.$$(`${form} input[type="date"], ${form} input[type="time"]`)).length === 0);
+    check('contact page has the map with directions', Boolean(await page.$('iframe[title^="Map showing Heritage Bites"]')) && (await page.$$('a[href*="google.com/maps"]')).length >= 2);
+    check('contact page shows the opening hours', (await page.$$('aside table tr')).length === 7);
     await page.type(`${form} input[autocomplete="name"]`, 'Test Person');
     await page.type(`${form} input[autocomplete="email"]`, 'test@example.com');
     await page.type(`${form} textarea`, 'Browser check: please confirm the Sunday opening hours.');
     await page.click(`${form} button[type="submit"]`);
     await page.waitForFunction(() => document.body.innerText.includes('Your reference is'), { timeout: 30000 });
     check('contact form sends the message and shows a reference', true);
-    check('FAQ has seven questions', (await page.$$('#faq details')).length === 7);
+    check('FAQ has six questions', (await page.$$('#faq details')).length === 6);
 
     console.log('\nSpecials and search');
     await go(page, '/specials');
@@ -504,6 +538,9 @@ async function main() {
     await page.waitForSelector('#board-heading', { timeout: 30000 });
     check('staff board opens after sign-in', (await page.$eval('#board-heading', (h) => h.textContent)).includes('Kitchen'));
     await shot(page, '13-staff-board');
+    await page.evaluate(() => Array.from(document.querySelectorAll('button')).find((b) => b.textContent.includes('Settings & checklist'))?.click());
+    await page.waitForSelector('input[id$="-facebook"]', { timeout: 15000 });
+    check('staff Settings has Facebook, Instagram and TikTok link fields', (await page.$$('input[id$="-facebook"], input[id$="-instagram"], input[id$="-tiktok"]')).length === 3);
 
     console.log('\nPage errors');
     check('no uncaught JavaScript errors while browsing', pageErrors.length === 0, pageErrors.slice(0, 5).join(' | '));

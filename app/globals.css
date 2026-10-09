@@ -123,6 +123,30 @@
     background-repeat: repeat-x;
   }
 
+  /* Heritage and kasi motifs (SVG). Beadwork-style diamonds in navy, ochre and cream, used on the menu. */
+  .kasi-strip {
+    height: 16px;
+    background-color: #001938;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='16' viewBox='0 0 32 16'><path d='M16 0 L32 8 L16 16 L0 8 Z' fill='%23B77E23'/><path d='M16 3.2 L28.8 8 L16 12.8 L3.2 8 Z' fill='%23F8F4EC'/><path d='M16 5.6 L21.6 8 L16 10.4 L10.4 8 Z' fill='%23001938'/><path d='M16 6.8 L17.6 8 L16 9.2 L14.4 8 Z' fill='%23E2AE5B'/></svg>");
+    background-size: 32px 16px;
+    background-repeat: repeat-x;
+  }
+
+  /* Stepped ochre diamonds that fade in from the right edge of a navy header. Decorative only. */
+  .kasi-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 46%;
+    z-index: -1;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><g fill='none' stroke='%23E2AE5B' stroke-width='2'><path d='M32 2 L62 32 L32 62 L2 32 Z' stroke-opacity='.45'/><path d='M32 13 L51 32 L32 51 L13 32 Z' stroke-opacity='.35'/><path d='M32 24 L40 32 L32 40 L24 32 Z' stroke-opacity='.4'/></g></svg>");
+    background-size: 64px 64px;
+    -webkit-mask-image: linear-gradient(to left, #000 15%, transparent);
+    mask-image: linear-gradient(to left, #000 15%, transparent);
+  }
+
   .arch {
     border-radius: 999px 999px 2rem 2rem;
     overflow: hidden;
@@ -288,6 +312,36 @@
     min-height: 7rem;
     resize: vertical;
   }
+  /* Yoco card fields: Yoco's blues on a light panel. Colours from a third-party brand listing; swap in the official ones. */
+  .yoco-panel {
+    background: #f2f9fd;
+    border: 1px solid rgba(1, 89, 164, 0.18);
+    border-top: 4px solid #00a9e0;
+  }
+  .yoco-wordmark {
+    color: #0159a4;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .yoco-badge {
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background: #0159a4;
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .yoco-field {
+    border-color: rgba(1, 89, 164, 0.35);
+  }
+  .yoco-field:focus {
+    border-color: #00a9e0;
+    box-shadow: 0 0 0 4px rgba(0, 169, 224, 0.25);
+  }
   .hint {
     margin-top: 0.4rem;
     font-size: 0.85rem;
@@ -401,6 +455,7 @@
   .icon-btn:hover {
     border-color: var(--color-navy);
   }
+  /* Cart button: outlined while empty, filled navy once a dish is in the cart (data-filled). */
   .cart-pill {
     display: inline-flex;
     align-items: center;
@@ -408,14 +463,24 @@
     min-height: 2.75rem;
     padding: 0.4rem 0.8rem 0.4rem 0.9rem;
     border-radius: 999px;
-    border: 0;
-    background: var(--color-navy);
-    color: var(--color-cream);
+    border: 1.5px solid var(--color-navy);
+    background: transparent;
+    color: var(--color-navy);
     font-weight: 600;
     font-size: 0.95rem;
     cursor: pointer;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
   }
   .cart-pill:hover {
+    background: rgba(0, 25, 56, 0.06);
+  }
+  .cart-pill[data-filled="true"] {
+    background: var(--color-navy);
+    color: var(--color-cream);
+  }
+  .cart-pill[data-filled="true"]:hover {
     background: var(--color-navy-soft);
   }
   .cart-count {

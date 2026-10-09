@@ -42,7 +42,7 @@ export function WaysToOrder({ storeLinks, contact }: { storeLinks: StoreLinks; c
   ];
   return (
     <section aria-labelledby="ways-to-order" className="container-hb py-16 md:py-24">
-      <SectionHeading id="ways-to-order" kicker="Four ways to eat with us" script="Your table, your way" title="Order however suits you">
+      <SectionHeading id="ways-to-order" kicker="Four ways to eat with us" script="Your meal, your way" title="Order however suits you">
         <p>Collect from our restaurant, eat in, or have us deliver through the apps you already use.</p>
       </SectionHeading>
       <ul className="mt-14 grid gap-6 md:grid-cols-2 xl:grid-cols-4">

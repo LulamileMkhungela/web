@@ -40,7 +40,7 @@ export const CHANNEL_LABEL: Record<OrderChannel, string> = {
 
 export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   card: 'Debit card (demo)',
-  yoco: 'Yoco (demo checkout)',
+  yoco: 'Yoco (demo)',
   counter: 'Pay at counter',
   whatsapp: 'Agree payment on WhatsApp',
   external: 'Paid through delivery app',

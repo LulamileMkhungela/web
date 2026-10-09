@@ -1,13 +1,13 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { all, get, getDb, run, tx } from './db';
-import { newId, newToken } from './ids';
+import { newId, newRef, newToken } from './ids';
 import { getItem, listSpecials } from './menu';
 import { specialIsLiveAt } from './specials';
 import { getSiteSettings } from './settings';
 import { formatSAST, isWithinHours, openStatus } from './time';
 import { formatZAR, vatInclusive } from './money';
 import { NEXT_STATUSES, PAYMENT_STATUS_LABEL, STATUS_LABEL } from './status';
-import { insertYocoCheckout, processDummyCard, type DemoCardInput } from './payments';
+import { insertYocoCheckout, markYocoCheckoutPaid, processDummyCard, type DemoCardInput } from './payments';
 import { whatsappLink } from './whatsapp';
 import { BRAND, SITE_URL } from './config';
 import type {
@@ -280,9 +280,14 @@ export function createOrder(input: CreateOrderInput): CreatedOrder {
       cardLast4 = card.last4;
       paymentRef = card.ref;
     } else if (input.payment.method === 'yoco') {
-      status = 'awaiting_payment';
+      // Yoco takes the same card details as the debit card option (demo): approved at once, no redirect.
+      const card = processDummyCard(input.payment.card);
+      status = 'new';
       paymentMethod = 'yoco';
-      paymentStatus = 'awaiting_payment';
+      paymentStatus = 'paid';
+      cardBrand = card.brand;
+      cardLast4 = card.last4;
+      paymentRef = newRef('YOCO');
     } else {
       status = 'new';
       paymentMethod = 'counter';
@@ -338,22 +343,18 @@ export function createOrder(input: CreateOrderInput): CreatedOrder {
       );
     }
 
-    const note =
-      input.channel === 'whatsapp'
-        ? 'Order sent via WhatsApp'
-        : status === 'awaiting_payment'
-          ? 'Waiting for Yoco payment'
-          : 'Order placed on the website';
+    const note = input.channel === 'whatsapp' ? 'Order sent via WhatsApp' : 'Order placed on the website';
     run(db, 'INSERT INTO order_events (order_id, status, note, at) VALUES (?, ?, ?, ?)', id, status, note, nowIso);
     if (paymentStatus === 'paid') {
-      run(db, 'INSERT INTO order_events (order_id, status, note, at) VALUES (?, ?, ?, ?)', id, status, 'Card payment approved (demo)', nowIso);
+      const approvedNote = paymentMethod === 'yoco' ? 'Yoco payment approved (demo)' : 'Card payment approved (demo)';
+      run(db, 'INSERT INTO order_events (order_id, status, note, at) VALUES (?, ?, ?, ?)', id, status, approvedNote, nowIso);
     }
 
-    let redirectUrl = `/order/${token}`;
     if (paymentMethod === 'yoco') {
-      const checkoutId = insertYocoCheckout(db, id, total, nowIso);
-      redirectUrl = `/pay/yoco/${checkoutId}`;
+      // Keep a record of the Yoco payment, already marked as paid.
+      markYocoCheckoutPaid(db, insertYocoCheckout(db, id, total, nowIso), nowIso);
     }
+    const redirectUrl = `/order/${token}`;
 
     let whatsappUrl: string | null = null;
     if (input.channel === 'whatsapp') {
@@ -480,49 +481,6 @@ export function setOrderStatus(orderId: string, next: OrderStatus, note = ''): O
     run(db, 'INSERT INTO order_events (order_id, status, note, at) VALUES (?, ?, ?, ?)', orderId, next, note || DEFAULT_NOTES[next], nowIso);
     const updated = get<OrderRow>(db, 'SELECT * FROM orders WHERE id = ?', orderId);
     return loadOrder(db, updated as OrderRow, true);
-  });
-}
-
-export function completeYocoCheckout(checkoutId: string, action: 'approve' | 'cancel'): { orderToken: string; state: string } {
-  const db = getDb();
-  return tx(db, () => {
-    const checkout = get<{ id: string; order_id: string; status: string }>(
-      db,
-      'SELECT id, order_id, status FROM yoco_checkouts WHERE id = ?',
-      checkoutId,
-    );
-    if (!checkout) throw new OrderError('This checkout session has expired.', 404);
-    const order = get<{ token: string; status: string; payment_status: string }>(
-      db,
-      'SELECT token, status, payment_status FROM orders WHERE id = ?',
-      checkout.order_id,
-    );
-    if (!order) throw new OrderError('Order not found.', 404);
-    if (checkout.status !== 'pending') {
-      return { orderToken: order.token, state: checkout.status };
-    }
-    const nowIso = new Date().toISOString();
-    if (action === 'approve') {
-      run(db, "UPDATE yoco_checkouts SET status = 'succeeded', completed_at = ? WHERE id = ?", nowIso, checkoutId);
-      run(
-        db,
-        "UPDATE orders SET status = 'new', payment_status = 'paid', payment_ref = ?, updated_at = ? WHERE id = ?",
-        `YOCO-DEMO-${checkoutId.slice(4, 12).toUpperCase()}`,
-        nowIso,
-        checkout.order_id,
-      );
-      run(db, "INSERT INTO order_events (order_id, status, note, at) VALUES (?, 'new', 'Yoco payment approved (demo)', ?)", checkout.order_id, nowIso);
-      return { orderToken: order.token, state: 'succeeded' };
-    }
-    run(db, "UPDATE yoco_checkouts SET status = 'cancelled', completed_at = ? WHERE id = ?", nowIso, checkoutId);
-    run(
-      db,
-      "UPDATE orders SET status = 'cancelled', payment_status = 'cancelled', updated_at = ? WHERE id = ?",
-      nowIso,
-      checkout.order_id,
-    );
-    run(db, "INSERT INTO order_events (order_id, status, note, at) VALUES (?, 'cancelled', 'Yoco checkout cancelled', ?)", checkout.order_id, nowIso);
-    return { orderToken: order.token, state: 'cancelled' };
   });
 }
 

@@ -40,30 +40,38 @@ Until these files exist, the site shows a built-in placeholder mark. The build e
 - **Menu:** Offering / Meals, each of the six categories, Specials.
 - **Home** and **Contact** sit beside the two groups.
 
-The footer uses the same group names with fewer links: Menu (full menu, weekly specials), About (about us, vision and mission, how we started) and Visit & contact, where each line has an icon. Along the bottom are the FAQ, privacy notice and terms.
+The footer uses the same group names with fewer links: Menu (full menu, weekly specials), About (about us, vision and mission, how we started) and Visit & contact, where each line has an icon. Facebook, Instagram and TikTok icons appear under Visit & contact and in the contact panel, but only for links saved in staff Settings. Along the bottom are the FAQ, privacy notice and terms.
 
 On phones, the bottom bar has Home, About, Menu, Contact and Cart. About and Menu open the same lists as sheets. A back-to-top button appears after scrolling.
 
 ## Home page
 
-From top to bottom: the hero (headline, search, a photo carousel of four dishes with a "kitchen right now" note, and how to pay), a price ticker of featured dishes (it pauses while the pointer is over it, and each dish opens on the menu), three today's specials (today's first, then the next ones coming up, all the same photo height), the four ways to order, the six menu categories, a "spin the pot" wheel that picks a random dish, the story, three enquiry routes (events, office lunches and table bookings), and the visit block with hours and a map. The three enquiry routes open the one contact form with the right topic already chosen.
+From top to bottom: the hero (headline, search, a photo carousel of four dishes with a "kitchen right now" note, and how to pay), a price ticker of featured dishes (it pauses while the pointer is over it, and each dish opens on the menu), three today's specials (today's first, then the next ones coming up, all the same photo height), the four ways to order, the six menu categories, a "spin the pot" wheel that picks a random dish, and the story. The wheel spins from its centre button, from the wheel itself, or from the Spin button beside it.
+
+The home page has no events, office lunch or table booking offer, and no separate visit block. The address, hours and map are on the contact page.
+
+## Contact page
+
+- One form for questions, feedback and general messages. It goes to the staff inbox. The API still accepts the older event, table and office-lunch message types for messages stored before this change, but the website does not offer them.
+- The address, opening hours and the call, WhatsApp, email and directions buttons sit beside the form. The map and the frequently asked questions are below it.
 
 ## Menu, photos and carousels
 
 - Categories and dishes are in `lib/seed-data.ts`: six categories (as on heritagebites.co.za) and 20 dishes. Each dish has one to four photos.
 - Every product card has a photo carousel with arrows, dots, a counter, swipe and arrow keys. Each dot shows its own photo.
 - The photos are web photos and must be replaced before launch. See `docs/IMAGE_CREDITS.md`.
+- Heritage motifs: a diamond-pattern panel sits in the menu header, and a beaded strip runs under each category heading and each product photo. They are drawn in CSS and SVG (`.kasi-panel` and `.kasi-strip` in `app/globals.css`), so they need no image files.
 
 ## Ordering and payments
 
 - The cart is kept in the browser. Checkout is one page: details, collection time and payment.
-- **Debit card and Yoco are test payments.** Any card details are accepted, nothing is charged, and only the card brand and last four digits are kept.
+- **Debit card and Yoco are test payments.** Any card details are accepted, nothing is charged, and only the card brand and last four digits are kept. Yoco takes the same card fields as the debit card, styled in Yoco's colours, and the order is placed at once. There is no separate Yoco page. The Yoco colours come from a third-party brand listing (Brandfetch, 2021) and have not been checked against Yoco's brand guidelines.
 - **Pay at the counter** and **WhatsApp** are also offered. WhatsApp creates a tracked order and opens a `wa.me` message with the order.
 - **Uber Eats and Mr D** open the store links from staff Settings. The defaults in `lib/config.ts` are the Pretoria listing pages for each app. No Heritage Bites store page was found, so paste the real store links in Settings when they exist.
 
 ## Staff console
 
-`/staff`, with the staff PIN. It has the kitchen board (new, preparing, ready, collected, with refund flags), the menu (availability, prices and descriptions), specials, enquiries and settings (hours, store links, contact details, prep times and the launch checklist).
+`/staff`, with the staff PIN. It has the kitchen board (new, preparing, ready, collected, with refund flags), the menu (availability, prices and descriptions), specials, enquiries and settings (hours, store links, social media links, contact details, prep times and the launch checklist).
 
 ## Scripts
 
@@ -89,9 +97,8 @@ BASE_URL=http://127.0.0.1:3100 npm run test:links
 ## Project layout
 
 - `app/(site)/`: public pages (home, menu, specials, about, contact, checkout, search, order tracking).
-- `app/(pay)/pay/yoco/[id]`: the simulated Yoco checkout page.
 - `app/staff/`: staff console and sign-in.
-- `app/api/`: JSON routes for menu, search, orders, enquiries, payments and staff.
+- `app/api/`: JSON routes for menu, search, orders, enquiries and staff.
 - `components/`: user interface, grouped by area (`site`, `menu`, `cart`, `checkout`, `home`, `contact`, `media`, `search`, `staff`, `ui`).
 - `lib/`: data, pricing, order logic, payments, opening-hours logic, navigation and site copy.
 - `docs/`: competitor analysis, image credits and review screenshots.
@@ -101,12 +108,13 @@ BASE_URL=http://127.0.0.1:3100 npm run test:links
 1. Confirm the prices and special prices (staff Settings and `lib/seed-data.ts`).
 2. Confirm the opening hours (staff Settings).
 3. Paste the Heritage Bites Uber Eats and Mr D store links (staff Settings).
-4. Replace the web photos listed in `docs/IMAGE_CREDITS.md` with the owner's own photos.
-5. Add the logo files to `public/brand/` (see "Logo").
-6. Approve the Vision and Mission wording, which is currently a draft (`lib/content.ts`).
-7. Have the privacy notice and terms reviewed for POPIA compliance.
-8. Connect real Yoco and card-gateway keys. None are connected yet.
-9. Change `STAFF_PIN` and `STAFF_SESSION_SECRET`, serve the site over HTTPS and set `COOKIE_SECURE=true`.
+4. Paste the Facebook, Instagram and TikTok page links (staff Settings, Social media), or leave any of them blank.
+5. Replace the web photos listed in `docs/IMAGE_CREDITS.md` with the owner's own photos.
+6. Add the logo files to `public/brand/` (see "Logo").
+7. Approve the Vision and Mission wording, which is currently a draft (`lib/content.ts`).
+8. Have the privacy notice and terms reviewed for POPIA compliance.
+9. Connect real Yoco and card-gateway keys, and replace the Yoco colours with the official brand palette and logo. None are connected yet.
+10. Change `STAFF_PIN` and `STAFF_SESSION_SECRET`, serve the site over HTTPS and set `COOKIE_SECURE=true`.
 
 ## Known limitations
 

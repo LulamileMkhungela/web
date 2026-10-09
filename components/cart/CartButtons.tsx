@@ -7,7 +7,10 @@ import { BagIcon } from '@/components/ui/Icons';
 
 export type CartItemInput = { lineKey: string; name: string; priceCents: number; image: string };
 
-/** Header button that opens the cart drawer, with the item count. */
+/**
+ * Header button that opens the cart drawer, with the item count. Outlined while the cart is empty and
+ * filled navy once something has been added.
+ */
 export function CartToggle() {
   const { count, open, ready } = useCart();
   const shown = ready ? count : 0;
@@ -16,6 +19,7 @@ export function CartToggle() {
       type="button"
       onClick={open}
       className="cart-pill"
+      data-filled={shown > 0 ? 'true' : undefined}
       aria-label={`Open cart, ${shown} ${shown === 1 ? 'item' : 'items'}`}
     >
       <BagIcon className="h-5 w-5" />

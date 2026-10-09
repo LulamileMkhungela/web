@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { SocialIcons, hasSocialLinks } from '@/components/site/SocialIcons';
 import { Logo } from '@/components/ui/Logo';
 import { BRAND } from '@/lib/config';
 import { FOOTER_ABOUT_LINKS, FOOTER_HELP_LINKS, FOOTER_MENU_LINKS, type NavLink } from '@/lib/nav';
-import type { ContactSettings } from '@/lib/types';
+import type { ContactSettings, SocialLinks } from '@/lib/types';
 import { whatsappLink } from '@/lib/whatsapp';
 
 const LINK = 'text-cream/85 no-underline hover:text-cream hover:underline underline-offset-4';
@@ -28,8 +29,16 @@ function LinkGroup({ id, title, links }: { id: string; title: string; links: Nav
   );
 }
 
-/** Footer: the same groups as the header with fewer links. Contact lines carry icons. */
-export function SiteFooter({ logo, contact }: { logo: string | null; contact: ContactSettings }) {
+/** Footer: the same groups as the header with fewer links. Contact lines carry icons. Social icons show only once a link is saved. */
+export function SiteFooter({
+  logo,
+  contact,
+  social,
+}: {
+  logo: string | null;
+  contact: ContactSettings;
+  social: SocialLinks;
+}) {
   const year = new Date().getFullYear();
   return (
     <footer className="grain relative mt-24 overflow-hidden bg-navy text-cream/85">
@@ -81,6 +90,12 @@ export function SiteFooter({ logo, contact }: { logo: string | null; contact: Co
                 {contact.email}
               </a>
             </li>
+            {hasSocialLinks(social) ? (
+              <li className="flex flex-col gap-3 pt-2">
+                <p className="text-cream/80">Follow us</p>
+                <SocialIcons social={social} tone="light" />
+              </li>
+            ) : null}
           </ul>
         </nav>
       </div>

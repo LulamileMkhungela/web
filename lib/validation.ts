@@ -99,12 +99,39 @@ const dayHours = z
   .object({ open: hhmm, close: hhmm })
   .nullable();
 
+/** True when the link's host is the network's own domain (or a subdomain of it). */
+function hostMatches(value: string, domain: string): boolean {
+  try {
+    const host = new URL(value).hostname.toLowerCase();
+    return host === domain || host.endsWith(`.${domain}`);
+  } catch {
+    return false;
+  }
+}
+
+/** A social media link: blank, or a full https:// link on the network's own domain. */
+function socialUrl(label: string, domain: string) {
+  return z
+    .string()
+    .trim()
+    .max(300)
+    .refine((value) => value === '' || /^https:\/\/\S+$/i.test(value), 'Paste a full https:// link, or leave the box empty')
+    .refine((value) => value === '' || hostMatches(value, domain), `Paste a ${label} link (it should be on ${domain})`);
+}
+
 export const settingsSchema = z.object({
   hours: z.array(dayHours).length(7).optional(),
   storeLinks: z
     .object({
       ubereats: z.string().trim().max(300),
       mrd: z.string().trim().max(300),
+    })
+    .optional(),
+  social: z
+    .object({
+      facebook: socialUrl('Facebook', 'facebook.com'),
+      instagram: socialUrl('Instagram', 'instagram.com'),
+      tiktok: socialUrl('TikTok', 'tiktok.com'),
     })
     .optional(),
   prep: z

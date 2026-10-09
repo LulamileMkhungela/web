@@ -161,7 +161,7 @@ export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
             aria-labelledby={`heading-${category.id}`}
             className="container-hb py-12 md:py-16"
           >
-            <header className="flex flex-col gap-2 border-b border-line pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <header className="flex flex-col gap-2 pb-5 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <h2 id={`heading-${category.id}`} className="text-[clamp(1.9rem,3.4vw,2.6rem)] font-bold">
                   {category.name}
@@ -172,6 +172,7 @@ export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
                 {category.items.length} {category.items.length === 1 ? 'dish' : 'dishes'}
               </p>
             </header>
+            <div aria-hidden="true" className="kasi-strip rounded-full" />
             <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {category.items.map((item, index) => (
                 <ProductCard key={item.id} item={item} eager={index === 0} />

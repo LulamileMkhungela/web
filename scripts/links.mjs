@@ -82,7 +82,7 @@ async function main() {
       const url = new URL(href, `${BASE}${path}`);
       if (url.origin !== BASE && !href.startsWith(BASE)) continue;
       const target = `${url.pathname}${url.search}`;
-      if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/pay/') || url.pathname.startsWith('/order/')) continue;
+      if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/order/')) continue;
       const ok = await checkPath(target + (url.hash ? url.hash : ''), path);
       if (ok && url.hash) {
         const targetPage = await fetchPage(url.pathname);

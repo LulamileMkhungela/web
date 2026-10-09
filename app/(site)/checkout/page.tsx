@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 export default async function CheckoutPage({
   searchParams,
 }: {
-  searchParams: Promise<{ channel?: string; cancelled?: string }>;
+  searchParams: Promise<{ channel?: string }>;
 }) {
   const params = await searchParams;
   const settings = getSiteSettings();
@@ -33,7 +33,6 @@ export default async function CheckoutPage({
           isOpen={status.isOpen}
           statusDetail={status.detail}
           initialChannel={params.channel === 'whatsapp' ? 'whatsapp' : 'website'}
-          cancelled={params.cancelled === '1'}
           etaMinutes={etaMinutes}
           storeLinks={settings.storeLinks}
         />

@@ -123,10 +123,6 @@ export const FAQ = [
     q: 'Are prices VAT-inclusive?',
     a: 'Yes. Every price includes VAT at 15%, and the VAT amount is shown on your order.',
   },
-  {
-    q: 'Can you cater an event or office lunch?',
-    a: 'Send an enquiry on this page with the date and number of guests, and we will confirm what we can offer.',
-  },
 ] as const;
 
 export const SEARCH_SUGGESTIONS = ['Mogodu', 'Kota', 'Magwinya', 'Samp', 'Motogo', 'Chicken', 'Pap', 'Chakalaka'];
