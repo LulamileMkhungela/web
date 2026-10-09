@@ -3,16 +3,20 @@
 import { useId, useState, type FormEvent } from 'react';
 import { Field } from '@/components/ui/Field';
 
-type Topic = 'general' | 'catering' | 'table';
+export type ContactTopic = 'general' | 'catering' | 'table';
+type Topic = ContactTopic;
 
 const TOPICS: { id: Topic; label: string }[] = [
   { id: 'general', label: 'General question or feedback' },
-  { id: 'catering', label: 'Catering or an event' },
+  { id: 'catering', label: 'Catering, an event or office lunches' },
   { id: 'table', label: 'Table booking' },
 ];
 
-/** One form for every enquiry. Extra fields appear only for catering and table bookings. */
-export function ContactForm() {
+/**
+ * One form for every enquiry. Extra fields appear only for catering and table bookings.
+ * The home page opens it with a topic already chosen (initialTopic).
+ */
+export function ContactForm({ initialTopic = 'general' }: { initialTopic?: ContactTopic }) {
   const topicId = useId();
   const nameId = useId();
   const phoneId = useId();
@@ -24,7 +28,7 @@ export function ContactForm() {
   const bookTimeId = useId();
   const peopleId = useId();
 
-  const [topic, setTopic] = useState<Topic>('general');
+  const [topic, setTopic] = useState<Topic>(initialTopic);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');

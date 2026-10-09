@@ -88,17 +88,36 @@
     }
   }
 
+  /* Navy sections: soft gold glow plus a fine noise texture (SVG). */
   .grain {
+    position: relative;
+    isolation: isolate;
     background-image:
       radial-gradient(circle at 12% 18%, rgba(183, 126, 35, 0.14), transparent 42%),
       radial-gradient(circle at 88% 84%, rgba(226, 174, 91, 0.1), transparent 38%);
   }
-  .band-stripe {
-    height: 6px;
-    background: linear-gradient(90deg, var(--color-ochre) 0%, var(--color-ochre-bright) 50%, var(--color-ochre) 100%);
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.12;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   }
+
+  /* Ochre zigzag edge (SVG). Sits at the bottom of a navy section or the top of a footer. */
+  .band-zigzag {
+    height: 22px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='22'><path d='M0 22 L22 0 L44 22 Z' fill='%23B77E23' fill-opacity='.55'/></svg>");
+    background-size: 44px 22px;
+    background-repeat: repeat-x;
+  }
+
   .arch {
     border-radius: 999px 999px 2rem 2rem;
+    overflow: hidden;
   }
 
   .kicker {
@@ -113,8 +132,8 @@
   }
   .eyebrow {
     font-family: var(--font-script);
-    font-size: clamp(1.5rem, 3vw, 2rem);
-    line-height: 1.2;
+    font-size: clamp(2rem, 3.4vw, 2.85rem);
+    line-height: 1.05;
     color: var(--color-ochre);
   }
   .eyebrow-light {
@@ -586,6 +605,40 @@
   }
 }
 
+/* Price ticker and hero entrance. The ticker pauses on hover or with its button. */
+@keyframes hb-ticker {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@keyframes hb-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.ticker-track {
+  animation: hb-ticker 38s linear infinite;
+}
+.ticker:hover .ticker-track,
+.ticker[data-paused="true"] .ticker-track {
+  animation-play-state: paused;
+}
+.rise {
+  animation: hb-rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.rise-delay-2 {
+  animation-delay: 0.22s;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -594,6 +647,7 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
 }

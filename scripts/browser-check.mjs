@@ -331,7 +331,11 @@ async function main() {
 
     console.log('\nSpecials and search');
     await go(page, '/specials');
-    check('specials page lists eight specials', (await page.$$('article')).length === 8);
+    // The weekly planner (seven days) plus the daily special each carry one add-to-cart button.
+    const specialButtons = await page.$$eval('main button', (buttons) =>
+      buttons.filter((button) => /Add to cart|Added to cart|Not available|Only on/.test(button.textContent || '')).length,
+    );
+    check('specials page lists eight specials', specialButtons === 8, `${specialButtons} add buttons`);
     await go(page, '/');
     await page.click('button[aria-controls="site-search"]');
     await page.type('#site-search input[type="search"]', 'mog');
@@ -343,8 +347,9 @@ async function main() {
     await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 1 });
     for (const route of ['/', '/menu', '/specials', '/about', '/contact', '/checkout', '/search?q=kota']) {
       await go(page, route);
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-      check(`no sideways scrolling on ${route}`, overflow <= 1, `${overflow}px`);
+      // With mobile emulation a page that overflows widens the layout viewport, so compare with the device width.
+      const sideways = await page.evaluate(() => ({ inner: window.innerWidth, scroll: document.documentElement.scrollWidth }));
+      check(`no sideways scrolling on ${route}`, sideways.inner <= 390 && sideways.scroll <= sideways.inner + 1, JSON.stringify(sideways));
     }
     await go(page, '/');
     const navBox = await page.$eval('nav[aria-label="Quick navigation"]', (n) => {
@@ -400,8 +405,8 @@ async function main() {
     await page.setViewport({ width: 768, height: 1024, isMobile: false, hasTouch: false, deviceScaleFactor: 1 });
     for (const route of ['/', '/menu', '/checkout', '/contact']) {
       await go(page, route);
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-      check(`no sideways scrolling on ${route} (768px)`, overflow <= 1, `${overflow}px`);
+      const sideways = await page.evaluate(() => ({ inner: window.innerWidth, scroll: document.documentElement.scrollWidth }));
+      check(`no sideways scrolling on ${route} (768px)`, sideways.inner <= 768 && sideways.scroll <= sideways.inner + 1, JSON.stringify(sideways));
     }
     await go(page, '/');
     await shot(page, '12-home-tablet');

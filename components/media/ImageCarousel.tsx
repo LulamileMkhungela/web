@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import { ChevronLeftIcon, ChevronRightIcon } from '@/components/ui/Icons';
 
 /**
@@ -10,23 +10,36 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@/components/ui/Icons';
 export function ImageCarousel({
   images,
   alt,
+  alts,
   priority = false,
+  frame = 'aspect-[4/3]',
+  onIndexChange,
 }: {
   images: string[];
   alt: string;
+  /** Alt text for each photo, in the same order as images. */
+  alts?: string[];
   priority?: boolean;
+  /** Classes that size the frame. Defaults to a 4:3 box. */
+  frame?: string;
+  /** Called with the index of the photo on screen whenever it changes. */
+  onIndexChange?: (index: number) => void;
 }) {
   const [index, setIndex] = useState(0);
   const startX = useRef<number | null>(null);
   const count = images.length;
+  const current = Math.min(index, Math.max(count - 1, 0));
+
+  useEffect(() => {
+    onIndexChange?.(current);
+  }, [current, onIndexChange]);
 
   if (count === 0) {
-    return <div className="aspect-[4/3] bg-cream-deep" aria-hidden="true" />;
+    return <div className={`${frame} bg-cream-deep`} aria-hidden="true" />;
   }
 
   const multi = count > 1;
   const go = (next: number) => setIndex(((next % count) + count) % count);
-  const current = Math.min(index, count - 1);
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (!multi) return;
@@ -62,13 +75,13 @@ export function ImageCarousel({
       onPointerLeave={() => {
         startX.current = null;
       }}
-      className="relative aspect-[4/3] select-none overflow-hidden bg-cream-deep"
+      className={`relative select-none overflow-hidden bg-cream-deep ${frame}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         key={images[current]}
         src={images[current]}
-        alt={`${alt}, photo ${current + 1} of ${count}`}
+        alt={alts?.[current] ?? `${alt}, photo ${current + 1} of ${count}`}
         className="carousel-img h-full w-full object-cover"
         loading={priority && current === 0 ? 'eager' : 'lazy'}
         decoding="async"

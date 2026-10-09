@@ -64,7 +64,7 @@ export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
 
       <nav aria-label="Menu categories" className="sticky top-[4.5rem] z-30 mt-8 border-b border-line bg-cream/95 backdrop-blur">
         <div className="container-hb">
-          <div className="chip-row py-3">
+          <div className="chip-row py-3 lg:flex-wrap lg:overflow-visible">
             <a href="#menu" className="chip">
               All dishes
             </a>

@@ -55,7 +55,7 @@ export function SpecialCard({ special }: { special: SpecialCardData }) {
         </div>
         <p className="leading-relaxed">{special.description}</p>
         <p className="text-sm font-semibold text-ochre-deep">
-          {special.windowLabel ?? `On ${special.dayLabel.toLowerCase()}`}
+          {special.windowLabel ?? `On ${special.dayLabel}`}
         </p>
         <div className="mt-auto pt-2">
           <AddToCartButton

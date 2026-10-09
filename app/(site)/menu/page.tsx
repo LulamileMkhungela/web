@@ -19,7 +19,7 @@ export default function MenuPage() {
   const status = openStatus(getSiteSettings().hours);
   return (
     <>
-      <PageHeader kicker="Offering / Meals" title="Our menu">
+      <PageHeader kicker="Offering / Meals" script="Honest food, generous plates" title="Our menu">
         <p>Every dish is priced including VAT. Add dishes to your cart, or tap Order now to go straight to checkout.</p>
         <p className="mt-5">
           <span className="pill">

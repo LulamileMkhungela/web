@@ -7,7 +7,7 @@
 ## Checks before launch
 
 - `tlhakwana-1.webp` came from a search for **pork** trotters. Check that it shows beef trotters, as the menu says, or replace it.
-- The three `motogo-*` photos (sorghum porridge) and the two `pap-2` / `russian-2` photos are stock previews. Confirm a licence or replace them.
+- The Dreamstime stock previews (`motogo-1`, `motogo-2`, `pap-2`, `russian-2`) were removed because they carry a visible watermark. Motogo wa Mabele, Pap and Russian & Chips each show one photo until the owner's photos arrive.
 - The Heritage Bites logo is not yet in the build (see the README, "Logo").
 
 ## Licence categories
@@ -16,7 +16,7 @@
 - **Pexels:** free licence. Confirm on the source page.
 - **Recipe blog, news site or Pinterest pin:** copyright belongs to the publisher or photographer. Not licensed for this business. Replace.
 
-## File list (42 files in `public/images/menu/`)
+## File list (38 files in `public/images/menu/`)
 
 | File | Used for | Where we found it | Licence status |
 |---|---|---|---|
@@ -44,17 +44,13 @@
 | `mogodu-1.webp` | Mogodu & Samp; home page feature | https://www.pinterest.com/ideas/tripe-recipes-south-african/949339868610/ | Pinterest pin. Replace. |
 | `mogodu-2.webp` | Mogodu, Samp & Braised Cabbage | https://www.pinterest.com/ideas/beef-tripe-recipes-south-african/902490104823/ | Pinterest pin. Replace. |
 | `mogodu-3.webp` | Mogodu & Samp | https://www.pinterest.com/ideas/tripe-recipes-south-african/949339868610/ | Pinterest pin. Replace. |
-| `motogo-1.webp` | Motogo wa Mabele | https://www.dreamstime.com/photos-images/african-porridge.html | Stock preview. Confirm or replace. |
-| `motogo-2.webp` | Motogo wa Mabele | https://www.dreamstime.com/photos-images/african-porridge.html | Stock preview. Confirm or replace. |
 | `motogo-3.webp` | Motogo wa Mabele | https://livhuwani.com/sorghum-porridge/ | Blog. Replace. |
 | `pap-1.webp` | Pap | https://www.iol.co.za/lifestyle/food-drink/what-would-you-add-to-this-plate-of-pap-south-african-celebs-weigh-in-8d8e921c-6452-40db-a853-5499f5ffa9a9 | News photo. Replace. |
-| `pap-2.webp` | Pap (pap with wors and tomato sauce) | https://www.dreamstime.com/photos-images/african-pap.html | Stock preview. Confirm or replace. |
 | `pap-cabbage-1.webp` | Braised Cabbage | https://auberginefoods.com/blogs/all-about-south-africa/what-is-pap-in-south-african-food | Blog. Replace. |
 | `pap-cabbage-2.webp` | Braised Cabbage | https://www.pinterest.com/pin/514536326168067969 | Pinterest pin. Replace. |
 | `pap-tshotlo-1.webp` | Pap, Cabbage & Tshotlo | https://www.pinterest.com/pin/dijo-tsa-kgopotso-on-instagram-cravings-sorted-pap-cabbage-and-malana-safood-foodblogger-traditionalfood-in-2023--469007748709983781/ | Pinterest pin. Replace. |
 | `pap-tshotlo-2.webp` | Pap, Cabbage & Tshotlo | https://africanfoodlove.com/2026/02/15/botswana-seswaa-slow-cooked-shredded-beef-with-pap | Recipe blog. Replace. |
 | `russian-1.webp` | Russian & Chips | https://stock.adobe.com/search?k=sausage+chips | Adobe Stock. Confirm licence. |
-| `russian-2.webp` | Russian & Chips | https://www.dreamstime.com/traditional-south-african-street-food-russian-sausage-chips-popular-russian-sausage-chips-traditional-south-african-image392752351 | Stock preview. Confirm or replace. |
 | `salsa-1.webp` | House Salsa | https://www.thetastychilli.com/tomato-and-onion-salad/ | Recipe blog. Replace. |
 | `salsa-2.webp` | House Salsa | https://melbyspost.co.za/index.php/2020/02/17/traditional-tomato-sauce-for-pap-wors/ | Blog. Replace. |
 | `samp-beans-1.webp` | Samp & Beans | https://willflyforfood.net/south-african-food | Food blog. Replace. |

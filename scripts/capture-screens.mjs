@@ -35,7 +35,7 @@ async function main() {
     await open(page, '/');
     await save(page, 'home-desktop.jpg');
 
-    await page.evaluate(() => document.getElementById('specials-heading')?.scrollIntoView({ block: 'start' }));
+    await page.evaluate(() => document.getElementById('today-heading')?.scrollIntoView({ block: 'start' }));
     await sleep(500);
     await save(page, 'home-specials-desktop.jpg');
 

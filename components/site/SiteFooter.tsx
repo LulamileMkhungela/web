@@ -8,14 +8,15 @@ import { whatsappLink } from '@/lib/whatsapp';
 export function SiteFooter({ logo, contact }: { logo: string | null; contact: ContactSettings }) {
   const year = new Date().getFullYear();
   return (
-    <footer className="relative mt-24 overflow-hidden bg-navy text-cream/85">
-      <div className="band-stripe" aria-hidden="true" />
+    <footer className="grain relative mt-24 overflow-hidden bg-navy text-cream/85">
+      <div className="band-zigzag opacity-70" aria-hidden="true" />
       <div className="container-hb grid gap-12 py-16 sm:grid-cols-2 lg:grid-cols-4">
         <div className="flex flex-col gap-5">
           <Logo src={logo} tone="light" />
           <p className="max-w-xs leading-relaxed text-cream/80">
             Traditional African food, made with heritage and care in Pretoria Central.
           </p>
+          <p className="eyebrow eyebrow-light text-[2rem]">{BRAND.tagline}</p>
         </div>
 
         <nav aria-label="Footer menu" className="flex flex-col gap-3">
