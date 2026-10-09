@@ -1,0 +1,27 @@
+# dependencies and build output
+node_modules/
+.next/
+out/
+build/
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+
+# local data (SQLite database, uploads)
+data/
+*.db
+*.db-shm
+*.db-wal
+
+# environment and secrets
+.env
+.env.local
+.env.*.local
+
+# scratch files and tooling caches
+image-search/
+scratch/
+test-artifacts/
+.imgtools/
+.DS_Store
+*.log
