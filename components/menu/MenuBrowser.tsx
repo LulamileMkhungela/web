@@ -176,7 +176,6 @@ export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
                 {category.items.length} {category.items.length === 1 ? 'dish' : 'dishes'}
               </p>
             </header>
-            <div aria-hidden="true" className="kasi-strip rounded-full" />
             <div className="mt-8 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {category.items.map((item, index) => (
                 <ProductCard key={item.id} item={item} eager={index === 0} />

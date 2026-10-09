@@ -236,8 +236,11 @@ async function main() {
 
     console.log('\nMenu and product photos');
     await go(page, '/menu');
-    const kasiStrips = await page.$$eval('.kasi-strip', (els) => els.length);
-    check('menu carries the heritage strip on every card and category header', kasiStrips >= 26, `${kasiStrips} strips`);
+    const headingStrips = await page.$$eval('section[id^="category-"] header + .kasi-strip', (els) => els.length);
+    check('no horizontal strip under any category heading', headingStrips === 0, `${headingStrips} under headings`);
+    const dishes = await page.$$eval('article[id^="item-"]', (els) => els.length);
+    const photoStrips = await page.$$eval('article[id^="item-"] .kasi-strip', (els) => els.length);
+    check('every dish photo carries the beaded strip', dishes > 0 && photoStrips === dishes, `${photoStrips} strips for ${dishes} dishes`);
     check('menu header carries the kasi artwork', Boolean(await page.$('.kasi-panel')));
     const cardIds = await page.$$eval('article[id^="item-"]', (els) => els.map((e) => e.id));
     check('menu lists all 20 dishes', cardIds.length === 20, `${cardIds.length}`);
