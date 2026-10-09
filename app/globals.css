@@ -1,0 +1,792 @@
+@import "tailwindcss";
+@import "@fontsource-variable/playfair-display/wght.css";
+@import "@fontsource-variable/playfair-display/wght-italic.css";
+@import "@fontsource/poppins/400.css";
+@import "@fontsource/poppins/500.css";
+@import "@fontsource/poppins/600.css";
+@import "@fontsource/poppins/700.css";
+@import "@fontsource/poppins/800.css";
+@import "@fontsource/allura/400.css";
+
+/* Brand palette from heritagebites.co.za: navy #001938, ochre #B77E23, cream #F8F4EC.
+   Text colours are chosen to pass WCAG AA on their backgrounds. */
+@theme {
+  --color-navy: #001938;
+  --color-navy-deep: #00112a;
+  --color-navy-soft: #10264d;
+  --color-navy-line: #23436f;
+  --color-ochre: #b77e23;
+  --color-ochre-bright: #e2ae5b;
+  --color-ochre-deep: #8a5b14;
+  --color-ochre-wash: #f4e8d0;
+  --color-cream: #f8f4ec;
+  --color-cream-deep: #efe6d4;
+  --color-line: #e3d9c6;
+  --color-ink: #1f1f1f;
+  --color-body: #4f4f4f;
+  --color-muted: #666666;
+  --color-success: #2e6b4a;
+  --color-danger: #9b3a2b;
+  --font-display: "Playfair Display Variable", "Playfair Display", Georgia, serif;
+  --font-script: "Allura", "Brush Script MT", cursive;
+  --font-sans: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --shadow-soft: 0 14px 34px -22px rgba(0, 25, 56, 0.35);
+  --shadow-lift: 0 30px 70px -28px rgba(0, 25, 56, 0.45);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+  body {
+    background: var(--color-cream);
+    color: var(--color-body);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.65;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--color-navy);
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-ochre-bright);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+  [id] {
+    scroll-margin-top: 6rem;
+  }
+  @media (max-width: 1023px) {
+    body {
+      padding-bottom: calc(4.25rem + env(safe-area-inset-bottom));
+    }
+  }
+}
+
+@layer components {
+  .container-hb {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 640px) {
+    .container-hb {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Navy sections: soft gold glow plus a fine noise texture (SVG). */
+  .grain {
+    position: relative;
+    isolation: isolate;
+    background-image:
+      radial-gradient(circle at 12% 18%, rgba(183, 126, 35, 0.14), transparent 42%),
+      radial-gradient(circle at 88% 84%, rgba(226, 174, 91, 0.1), transparent 38%);
+  }
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.12;
+    mix-blend-mode: soft-light;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  /* Ochre zigzag edge (SVG). Sits at the bottom of a navy section or the top of a footer. */
+  .band-zigzag {
+    height: 22px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='22'><path d='M0 22 L22 0 L44 22 Z' fill='%23B77E23' fill-opacity='.55'/></svg>");
+    background-size: 44px 22px;
+    background-repeat: repeat-x;
+  }
+
+  /* Beaded band for the footer edge (SVG): gold diamonds with cream beads between them. */
+
+  /* Heritage vectors (SVG): one motif set used across the site. Beadwork diamonds, a diamond lattice, a zigzag edge. */
+  .kasi-strip {
+    height: 16px;
+    background-color: #001938;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='16' viewBox='0 0 32 16'><path d='M16 0 L32 8 L16 16 L0 8 Z' fill='%23B77E23'/><path d='M16 3.2 L28.8 8 L16 12.8 L3.2 8 Z' fill='%23F8F4EC'/><path d='M16 5.6 L21.6 8 L16 10.4 L10.4 8 Z' fill='%23001938'/><path d='M16 6.8 L17.6 8 L16 9.2 L14.4 8 Z' fill='%23E2AE5B'/></svg>");
+    background-size: 32px 16px;
+    background-repeat: repeat-x;
+  }
+
+  /* Stepped ochre diamonds that fade in from the right edge of a navy header. Decorative only. */
+  /* The footer's top edge: the same woven diamonds as the menu, on a transparent background, so the footer shows through. */
+  .footer-weave {
+    height: 16px;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='16' viewBox='0 0 32 16'><path d='M16 0 L32 8 L16 16 L0 8 Z' fill='%23B77E23'/><path d='M16 3.2 L28.8 8 L16 12.8 L3.2 8 Z' fill='%23F8F4EC'/><path d='M16 5.6 L21.6 8 L16 10.4 L10.4 8 Z' fill='%23001938'/><path d='M16 6.8 L17.6 8 L16 9.2 L14.4 8 Z' fill='%23E2AE5B'/></svg>");
+    background-size: 32px 16px;
+    background-repeat: repeat-x;
+  }
+  .kasi-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 52%;
+    z-index: -1;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><g fill='none' stroke='%23E2AE5B' stroke-width='2'><path d='M32 2 L62 32 L32 62 L2 32 Z' stroke-opacity='.45'/><path d='M32 13 L51 32 L32 51 L13 32 Z' stroke-opacity='.35'/><path d='M32 24 L40 32 L32 40 L24 32 Z' stroke-opacity='.4'/></g></svg>");
+    background-size: 64px 64px;
+    -webkit-mask-image: linear-gradient(to left, #000 25%, transparent 96%);
+    mask-image: linear-gradient(to left, #000 25%, transparent 96%);
+  }
+  @media (max-width: 639px) {
+    .kasi-panel {
+      left: 0;
+      bottom: auto;
+      width: auto;
+      height: 72%;
+      opacity: 0.45;
+      -webkit-mask-image: linear-gradient(to bottom, #000 15%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 15%, transparent 100%);
+    }
+  }
+  @media (min-width: 640px) and (max-width: 1023px) {
+    .kasi-panel {
+      width: 46%;
+      opacity: 0.6;
+    }
+  }
+  /* The same lattice in ochre, faint, for cream surfaces. Parent needs position: relative and isolation. */
+  .kasi-wash {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='56' height='56' viewBox='0 0 56 56'><g fill='none' stroke='%23B77E23' stroke-width='1.4'><path d='M28 2 L54 28 L28 54 L2 28 Z' stroke-opacity='.22'/><path d='M28 12 L44 28 L28 44 L12 28 Z' stroke-opacity='.16'/></g></svg>");
+    background-size: 56px 56px;
+    -webkit-mask-image: linear-gradient(to left, #000 10%, transparent 75%);
+    mask-image: linear-gradient(to left, #000 10%, transparent 75%);
+  }
+  /* Product cards: the wash shows only in the bottom-right corner. */
+  .kasi-wash-corner {
+    -webkit-mask-image: radial-gradient(circle at 100% 100%, #000 0%, transparent 60%);
+    mask-image: radial-gradient(circle at 100% 100%, #000 0%, transparent 60%);
+  }
+  /* The ochre diamond that leads each category heading. */
+  .kasi-diamond {
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    margin-right: 0.75rem;
+    vertical-align: middle;
+    background: var(--color-ochre);
+    transform: translateY(-0.1em) rotate(45deg);
+  }
+
+  .arch {
+    border-radius: 999px 999px 2rem 2rem;
+    overflow: hidden;
+  }
+
+  .kicker {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-ochre-deep);
+  }
+  .kicker-light {
+    color: var(--color-ochre-bright);
+  }
+  .eyebrow {
+    font-family: var(--font-script);
+    font-size: clamp(2rem, 3.4vw, 2.85rem);
+    line-height: 1.05;
+    color: var(--color-ochre);
+  }
+  .eyebrow-light {
+    color: var(--color-ochre-bright);
+  }
+
+  /* Buttons: one height and radius everywhere so rows line up. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 999px;
+    border: 1.5px solid transparent;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      color 0.2s,
+      border-color 0.2s,
+      transform 0.2s;
+  }
+  .btn:hover {
+    transform: translateY(-1px);
+  }
+  .btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .btn-lg {
+    min-height: 3.5rem;
+    padding: 0.9rem 1.9rem;
+    font-size: 1rem;
+  }
+  .btn-sm {
+    min-height: 2.5rem;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  .btn-block {
+    width: 100%;
+  }
+  .btn-primary {
+    background: var(--color-ochre);
+    color: var(--color-navy);
+  }
+  .btn-primary:hover {
+    background: var(--color-ochre-bright);
+  }
+  .btn-navy {
+    background: var(--color-navy);
+    color: var(--color-cream);
+  }
+  .btn-navy:hover {
+    background: var(--color-navy-soft);
+  }
+  .btn-outline {
+    background: transparent;
+    border-color: var(--color-navy);
+    color: var(--color-navy);
+  }
+  .btn-outline:hover {
+    background: var(--color-navy);
+    color: var(--color-cream);
+  }
+  .btn-ghost-light {
+    background: transparent;
+    border-color: rgba(248, 244, 236, 0.6);
+    color: var(--color-cream);
+  }
+  .btn-ghost-light:hover {
+    background: rgba(248, 244, 236, 0.12);
+    border-color: var(--color-cream);
+  }
+  .btn-ochre {
+    background: var(--color-ochre);
+    color: var(--color-navy);
+  }
+  .btn-ochre:hover {
+    background: var(--color-ochre-bright);
+  }
+  .btn-quiet {
+    min-height: 2.5rem;
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border-color: transparent;
+    color: var(--color-navy);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .btn-quiet:hover {
+    background: rgba(0, 25, 56, 0.06);
+    transform: none;
+  }
+
+  /* Form fields: same height, radius and padding for every input, select and textarea. */
+  .label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-navy);
+  }
+  .label-dark {
+    color: var(--color-cream);
+  }
+  .field {
+    display: block;
+    width: 100%;
+    height: 3rem;
+    padding: 0.75rem 1rem;
+    border: 1.5px solid #d3c7b1;
+    border-radius: 14px;
+    background: #ffffff;
+    color: var(--color-ink);
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.4;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
+  }
+  .field::placeholder {
+    color: #7d766b;
+    opacity: 1;
+  }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-ochre);
+    box-shadow: 0 0 0 4px rgba(183, 126, 35, 0.22);
+  }
+  .field[aria-invalid="true"] {
+    border-color: var(--color-danger);
+  }
+  textarea.field {
+    height: auto;
+    min-height: 7rem;
+    resize: vertical;
+  }
+  /* Yoco card fields: Yoco's blues on a light panel. Colours from a third-party brand listing; swap in the official ones. */
+  .yoco-panel {
+    background: #f2f9fd;
+    border: 1px solid rgba(1, 89, 164, 0.18);
+    border-top: 4px solid #00a9e0;
+  }
+  .yoco-wordmark {
+    color: #0159a4;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .yoco-badge {
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    background: #0159a4;
+    color: #ffffff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .yoco-field {
+    border-color: rgba(1, 89, 164, 0.35);
+  }
+  .yoco-field:focus {
+    border-color: #00a9e0;
+    box-shadow: 0 0 0 4px rgba(0, 169, 224, 0.25);
+  }
+  .hint {
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+  .hint-dark {
+    color: rgba(248, 244, 236, 0.75);
+  }
+  .error-text {
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--color-danger);
+  }
+
+  .card {
+    background: #ffffff;
+    border: 1px solid #ebe2d1;
+    border-radius: 1.25rem;
+    box-shadow: 0 10px 30px -24px rgba(0, 25, 56, 0.35);
+  }
+
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.75rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    background: var(--color-ochre-wash);
+    color: var(--color-ochre-deep);
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .tag::before {
+    content: "";
+    width: 0.36rem;
+    height: 0.36rem;
+    margin-right: 0.5rem;
+    background: var(--color-ochre);
+    transform: rotate(45deg);
+  }
+  .tag-warn::before {
+    background: var(--color-danger);
+  }
+  .tag-warn {
+    background: #f6e1dc;
+    color: var(--color-danger);
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.25rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--color-cream);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .dot-status {
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 999px;
+    background: #7bd3a0;
+    flex-shrink: 0;
+  }
+  .dot-status-closed {
+    background: rgba(248, 244, 236, 0.5);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    border: 1.5px solid #d3c7b1;
+    background: #ffffff;
+    color: var(--color-navy);
+    font-weight: 600;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .chip:hover {
+    border-color: var(--color-navy);
+  }
+  .chip[aria-pressed="true"],
+  .chip[aria-current="true"] {
+    background: var(--color-navy);
+    border-color: var(--color-navy);
+    color: var(--color-cream);
+  }
+  .chip-row {
+    display: flex;
+    gap: 0.6rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    scrollbar-width: none;
+  }
+  .chip-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 999px;
+    border: 1.5px solid #d3c7b1;
+    background: #ffffff;
+    color: var(--color-navy);
+    cursor: pointer;
+  }
+  .icon-btn:hover {
+    border-color: var(--color-navy);
+  }
+  /* Cart button: outlined while empty, filled navy once a dish is in the cart (data-filled). */
+  .cart-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.4rem 0.8rem 0.4rem 0.9rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--color-navy);
+    background: transparent;
+    color: var(--color-navy);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition:
+      background-color 0.2s,
+      color 0.2s;
+  }
+  .cart-pill:hover {
+    background: rgba(0, 25, 56, 0.06);
+  }
+  .cart-pill[data-filled="true"] {
+    background: var(--color-navy);
+    color: var(--color-cream);
+  }
+  .cart-pill[data-filled="true"]:hover {
+    background: var(--color-navy-soft);
+  }
+  .cart-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding: 0 0.4rem;
+    border-radius: 999px;
+    background: var(--color-ochre-bright);
+    color: var(--color-navy);
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 999px;
+    border: 0;
+    background: none;
+    color: var(--color-navy);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .nav-link:hover {
+    background: rgba(0, 25, 56, 0.06);
+  }
+  .nav-link[aria-current="page"],
+  .nav-link[aria-current="true"],
+  .nav-link[aria-expanded="true"] {
+    background: rgba(0, 25, 56, 0.09);
+  }
+  .bottom-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    width: 100%;
+    min-height: 4rem;
+    padding: 0.4rem 0.25rem;
+    border: 0;
+    background: none;
+    color: rgba(248, 244, 236, 0.85);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .bottom-tab[aria-current="page"],
+  .bottom-tab[data-active="true"] {
+    color: var(--color-ochre-bright);
+  }
+
+  .stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1.5px solid #d3c7b1;
+    border-radius: 999px;
+    background: #ffffff;
+    overflow: hidden;
+  }
+  .stepper button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 0;
+    background: none;
+    color: var(--color-navy);
+    cursor: pointer;
+  }
+  .stepper button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .stepper span {
+    min-width: 2.25rem;
+    text-align: center;
+    font-weight: 700;
+    color: var(--color-navy);
+  }
+
+  /* Photo carousel */
+  .carousel-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(248, 244, 236, 0.94);
+    color: var(--color-navy);
+    box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.45);
+    cursor: pointer;
+    z-index: 2;
+  }
+  .carousel-arrow:hover {
+    background: #ffffff;
+  }
+  .carousel-dots {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.5rem;
+    display: flex;
+    justify-content: center;
+    gap: 0.1rem;
+    z-index: 2;
+  }
+  .dot-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .dot {
+    display: block;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-radius: 999px;
+    background: rgba(248, 244, 236, 0.75);
+    box-shadow: 0 0 0 1px rgba(0, 25, 56, 0.35);
+    transition:
+      width 0.2s,
+      background-color 0.2s;
+  }
+  .dot-on {
+    width: 1.4rem;
+    background: var(--color-ochre-bright);
+  }
+  .carousel-count {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    background: rgba(0, 25, 56, 0.82);
+    color: var(--color-cream);
+    font-size: 0.8rem;
+    font-weight: 600;
+    z-index: 2;
+  }
+  .carousel-img {
+    animation: hb-fade 0.35s ease;
+  }
+  @keyframes hb-fade {
+    from {
+      opacity: 0.35;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 100;
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
+    background: var(--color-navy);
+    color: var(--color-cream);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .skip-link:focus {
+    top: 1rem;
+  }
+
+  /* Anchored sections sit below the sticky header (and the menu's category bar). */
+  [id^="category-"],
+  [id^="item-"] {
+    scroll-margin-top: 9rem;
+  }
+  #menu {
+    scroll-margin-top: 9rem;
+  }
+  /* A dish opened from a link (for example the home ticker) gets a gold ring. */
+  article[id^="item-"]:target {
+    box-shadow: 0 0 0 3px var(--color-ochre-bright), var(--shadow-lift);
+  }
+}
+
+/* Price ticker and hero entrance. The ticker pauses while the pointer is over it or a keyboard user is inside it. */
+@keyframes hb-ticker {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+@keyframes hb-rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.ticker-track {
+  animation: hb-ticker 38s linear infinite;
+}
+.ticker:hover .ticker-track,
+.ticker:focus-within .ticker-track {
+  animation-play-state: paused;
+}
+.rise {
+  animation: hb-rise 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+.rise-delay-2 {
+  animation-delay: 0.22s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
