@@ -1,5 +1,5 @@
-// One source of truth for the grouped navigation. The top bar, the mobile bottom bar
-// and the footer all read from here, so the groups always match.
+// One source of truth for the grouped navigation. The top bar and the mobile bottom bar read the
+// same groups. The footer uses the same group names with fewer links.
 import { SEED_CATEGORIES } from './seed-data';
 
 export type NavLink = { label: string; href: string };
@@ -22,4 +22,22 @@ export const MENU_LINKS: NavLink[] = [
 export const NAV_GROUPS: NavGroup[] = [
   { id: 'about', label: 'About', links: ABOUT_LINKS },
   { id: 'menu', label: 'Menu', links: MENU_LINKS },
+];
+
+// Footer: the same group names as the header, with fewer links.
+export const FOOTER_MENU_LINKS: NavLink[] = [
+  { label: 'Full menu', href: '/menu' },
+  { label: 'Weekly specials', href: '/specials' },
+];
+
+export const FOOTER_ABOUT_LINKS: NavLink[] = [
+  { label: 'About us', href: '/about' },
+  { label: 'Vision & mission', href: '/about#vision' },
+  { label: 'How we started', href: '/about#how-we-started' },
+];
+
+export const FOOTER_HELP_LINKS: NavLink[] = [
+  { label: 'FAQ', href: '/contact#faq' },
+  { label: 'Privacy notice', href: '/privacy' },
+  { label: 'Terms', href: '/terms' },
 ];

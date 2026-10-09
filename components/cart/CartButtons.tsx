@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Check } from 'lucide-react';
 import { useCart } from './CartProvider';
 import { BagIcon } from '@/components/ui/Icons';
 
@@ -27,7 +27,11 @@ export function CartToggle() {
   );
 }
 
-/** Adds one line to the cart and confirms it on the button. */
+/**
+ * Adds one line to the cart. Once the dish is in the cart the button turns solid and says "In cart"
+ * (or "2 in cart"). The label is short so it fits on one line beside "Order now". It stays solid
+ * after a reload.
+ */
 export function AddToCartButton({
   item,
   disabled = false,
@@ -37,27 +41,22 @@ export function AddToCartButton({
   disabled?: boolean;
   label?: string;
 }) {
-  const { add } = useCart();
-  const [added, setAdded] = useState(false);
-
-  useEffect(() => {
-    if (!added) return;
-    const timer = setTimeout(() => setAdded(false), 1600);
-    return () => clearTimeout(timer);
-  }, [added]);
-
+  const { add, lines } = useCart();
+  const line = lines.find((entry) => entry.key === item.lineKey);
+  const inCart = Boolean(line) && !disabled;
+  let text = label;
+  if (!disabled && line) text = line.qty > 1 ? `${line.qty} in cart` : 'In cart';
   return (
     <button
       type="button"
-      className="btn btn-outline btn-block"
+      className={`btn btn-block ${inCart ? 'btn-navy' : 'btn-outline'}`}
       disabled={disabled}
       aria-live="polite"
-      onClick={() => {
-        add({ key: item.lineKey, name: item.name, priceCents: item.priceCents, image: item.image });
-        setAdded(true);
-      }}
+      data-in-cart={inCart ? 'true' : undefined}
+      onClick={() => add({ key: item.lineKey, name: item.name, priceCents: item.priceCents, image: item.image })}
     >
-      {disabled ? label : added ? 'Added to cart' : label}
+      {inCart ? <Check className="h-4 w-4" aria-hidden="true" /> : null}
+      {text}
     </button>
   );
 }

@@ -1,7 +1,8 @@
 // Headless-browser checks for the Heritage Bites site: grouped navigation (top and bottom),
 // product carousels (every photo), menu categories and filters, add to cart and order now,
 // single-page checkout (card, Yoco, WhatsApp, counter), the contact form, back to top,
-// responsive layout, field alignment, and the staff board.
+// responsive layout, field alignment, the staff board, the home ticker and today's specials,
+// the grouped footer, menu tabs, and the solid cart button.
 // Usage: BASE_URL=http://127.0.0.1:3100 STAFF_PIN=1234 SHOT_DIR=/tmp/shots node scripts/browser-check.mjs
 import fs from 'node:fs';
 import path from 'node:path';
@@ -164,6 +165,55 @@ async function main() {
     await shot(page, '01-home-desktop');
     await shot(page, '02-home-full', true);
 
+    console.log('\nHome: ticker, today\'s specials, footer');
+    const tickerRegion = '[role="region"][aria-label="Featured dishes and prices"]';
+    check('price ticker has no pause button', (await page.$$(`${tickerRegion} button`)).length === 0);
+    const tickerLinks = await page.$$eval(`${tickerRegion} a:not([aria-hidden])`, (els) => els.map((e) => e.getAttribute('href') ?? ''));
+    check('every ticker dish links to its menu card', tickerLinks.length >= 4 && tickerLinks.every((h) => /^\/menu#item-/.test(h)), JSON.stringify(tickerLinks));
+    await page.hover(tickerRegion);
+    await sleep(150);
+    const pausedOnHover = await page.$eval('.ticker-track', (el) => getComputedStyle(el).animationPlayState);
+    check('ticker pauses while the pointer is over it', pausedOnHover === 'paused', pausedOnHover);
+    await page.mouse.move(4, 4);
+    await sleep(150);
+    const runningAgain = await page.$eval('.ticker-track', (el) => getComputedStyle(el).animationPlayState);
+    check('ticker moves again when the pointer leaves', runningAgain === 'running', runningAgain);
+    const tickerTarget = tickerLinks[0] ?? '/menu#';
+    await Promise.all([
+      page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 90000 }),
+      page.evaluate((sel) => document.querySelector(`${sel} a:not([aria-hidden])`)?.click(), tickerRegion),
+    ]);
+    check('ticker dish opens the menu page', page.url().includes('/menu#item-'), page.url());
+    try {
+      await page.waitForFunction(() => (document.querySelector(':target')?.id ?? '').startsWith('item-'), { timeout: 8000 });
+    } catch {
+      // Reported by the checks below.
+    }
+    const openedId = await page.evaluate(() => document.querySelector(':target')?.id ?? '');
+    const ringColour = openedId ? await page.$eval(`#${openedId}`, (el) => getComputedStyle(el).boxShadow) : '';
+    check('clicking a ticker dish opens that dish on the menu', openedId === tickerTarget.split('#')[1], `${openedId} vs ${tickerTarget}`);
+    check('the dish that was opened has a gold ring', ringColour.includes('226, 174, 91'), ringColour);
+
+    await go(page, '/');
+    const todayFrames = await page.$$eval('section[aria-labelledby="today-heading"] article > div:first-child', (els) => els.map((e) => Math.round(e.getBoundingClientRect().height)));
+    check("today's specials show three cards", todayFrames.length === 3, `${todayFrames.length} cards`);
+    check('every special photo frame has the same height', todayFrames.length > 0 && new Set(todayFrames).size === 1, JSON.stringify(todayFrames));
+    const todayButtons = await page.$$eval('section[aria-labelledby="today-heading"] article button', (els) => els.map((b) => `${b.textContent.trim()}|${b.disabled}`));
+    check(
+      'special buttons are Add to cart, or disabled with the day they are on',
+      todayButtons.length === 3 &&
+        todayButtons.every((s) => /^(Add to cart|In cart|\d+ in cart)\|false$/.test(s) || /^(Only on [A-Za-z]+s|Not available right now)\|true$/.test(s)),
+      JSON.stringify(todayButtons),
+    );
+
+    const footerGroups = await page.$$eval('footer h2', (els) => els.map((e) => e.textContent.trim()));
+    check('footer groups are Menu, About and Visit & contact', JSON.stringify(footerGroups) === JSON.stringify(['Menu', 'About', 'Visit & contact']), JSON.stringify(footerGroups));
+    const footerLinkCount = await page.$$eval('footer nav a', (els) => els.length);
+    check('footer links are grouped and reduced to 11', footerLinkCount === 11, `${footerLinkCount} links`);
+    const footerIconCount = await page.$$eval('footer nav li svg', (els) => els.length);
+    check('footer visit and contact lines carry icons', footerIconCount === 4, `${footerIconCount} icons`);
+    check('footer edge is the beaded band', Boolean(await page.$('footer .band-beads')));
+
     console.log('\nMenu and product photos');
     await go(page, '/menu');
     const cardIds = await page.$$eval('article[id^="item-"]', (els) => els.map((e) => e.id));
@@ -227,6 +277,18 @@ async function main() {
     check('previous arrow returns to the first photo', (await carouselSnapshot(page, mogodu)).current === 0);
     await shot(page, '03-menu-cards');
 
+    await clickIn(page, 'nav[aria-label="Menu categories"]', 'Breakfast');
+    await sleep(1400);
+    const tabAfterClick = await page.$$eval('nav[aria-label="Menu categories"] a[aria-current="true"]', (els) => els.map((e) => e.textContent.trim()));
+    check('the clicked menu tab is the one shown as current', JSON.stringify(tabAfterClick) === JSON.stringify(['Breakfast']), JSON.stringify(tabAfterClick));
+    await page.evaluate(() => {
+      const section = document.getElementById('category-popular');
+      window.scrollTo({ top: section.getBoundingClientRect().top + window.scrollY - 160, behavior: 'instant' });
+    });
+    await sleep(400);
+    const tabAfterScroll = await page.$$eval('nav[aria-label="Menu categories"] a[aria-current="true"]', (els) => els.map((e) => e.textContent.trim()));
+    check('scrolling moves the current tab to the section in view', JSON.stringify(tabAfterScroll) === JSON.stringify(['Popular Favourites']), JSON.stringify(tabAfterScroll));
+
     await clickIn(page, 'body', 'Vegetarian only');
     const vegCount = (await page.$$('article[id^="item-"]')).length;
     check('vegetarian filter narrows the menu', vegCount > 0 && vegCount < 20, `${vegCount}`);
@@ -247,6 +309,23 @@ async function main() {
     await clickIn(page, '#item-mogodu-samp', 'Add to cart');
     const storedAfterAdd = await page.evaluate(() => JSON.parse(localStorage.getItem('hb-cart-v1') || '[]'));
     check('Add to cart stores Mogodu & Samp', storedAfterAdd.some((l) => l.key === 'item:mogodu-samp'));
+    const solidAfterAdd = await page.$$eval('#item-mogodu-samp button', (buttons) =>
+      buttons.filter((b) => b.textContent.includes('In cart')).map((b) => b.getAttribute('data-in-cart')),
+    );
+    check('after adding, the button turns solid and says In cart', solidAfterAdd.length === 1 && solidAfterAdd[0] === 'true', JSON.stringify(solidAfterAdd));
+    await page.reload({ waitUntil: 'networkidle0' });
+    await page.waitForFunction(
+      () => Array.from(document.querySelectorAll('#item-mogodu-samp button')).some((b) => b.textContent.includes('In cart')),
+      { timeout: 8000 },
+    );
+    const solidAfterReload = await page.$$eval('#item-mogodu-samp button', (buttons) =>
+      buttons.filter((b) => b.textContent.includes('In cart')).map((b) => b.getAttribute('data-in-cart')),
+    );
+    check('the solid button is still there after a reload', solidAfterReload.length === 1 && solidAfterReload[0] === 'true', JSON.stringify(solidAfterReload));
+    const solidHeight = await page.$$eval('#item-mogodu-samp button', (buttons) =>
+      buttons.filter((b) => b.dataset.inCart === 'true').map((b) => Math.round(b.getBoundingClientRect().height)),
+    );
+    check('the solid cart button stays on one line beside Order now', solidHeight.length === 1 && solidHeight[0] <= 60, JSON.stringify(solidHeight));
     await clickIn(page, '#item-fried-chips', 'Order now');
     await waitForPath(page, '/checkout');
     check('Order now goes straight to checkout', page.url().endsWith('/checkout'));
@@ -313,6 +392,8 @@ async function main() {
 
     console.log('\nContact');
     await go(page, '/contact');
+    const asideIcons = await page.$$eval('aside svg', (els) => els.length);
+    check('contact visit panel has icons on its address, buttons and opening hours', asideIcons >= 6, `${asideIcons} icons`);
     const form = 'form[aria-labelledby="contact-form-heading"]';
     const contactHeights = await fieldHeights(page, `${form} input.field, ${form} select.field`);
     check('contact form fields share one height', new Set(contactHeights).size === 1, JSON.stringify([...new Set(contactHeights)]));
@@ -333,7 +414,7 @@ async function main() {
     await go(page, '/specials');
     // The weekly planner (seven days) plus the daily special each carry one add-to-cart button.
     const specialButtons = await page.$$eval('main button', (buttons) =>
-      buttons.filter((button) => /Add to cart|Added to cart|Not available|Only on/.test(button.textContent || '')).length,
+      buttons.filter((button) => /Add to cart|In cart|\d+ in cart|Not available|Only on/.test(button.textContent || '')).length,
     );
     check('specials page lists eight specials', specialButtons === 8, `${specialButtons} add buttons`);
     await go(page, '/');
@@ -395,6 +476,8 @@ async function main() {
 
     await go(page, '/menu');
     await clickIn(page, '#item-chicken-wings', 'Add to cart');
+    const bagSolid = await page.$eval('nav[aria-label="Quick navigation"] li:last-child svg', (svg) => svg.getAttribute('fill') === 'currentColor');
+    check('bottom cart icon is solid when the cart has items', bagSolid);
     await go(page, '/checkout');
     await page.waitForSelector('form select');
     const phoneFields = await fieldHeights(page, 'form input.field, form select.field');

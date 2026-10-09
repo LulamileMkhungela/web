@@ -115,6 +115,14 @@
     background-repeat: repeat-x;
   }
 
+  /* Beaded band for the footer edge (SVG): gold diamonds with cream beads between them. */
+  .band-beads {
+    height: 24px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='24' viewBox='0 0 40 24'><path d='M20 4 L27 12 L20 20 L13 12 Z' fill='%23E2AE5B'/><circle cx='0' cy='12' r='2.6' fill='%23F8F4EC' fill-opacity='.8'/><circle cx='40' cy='12' r='2.6' fill='%23F8F4EC' fill-opacity='.8'/></svg>");
+    background-size: 40px 24px;
+    background-repeat: repeat-x;
+  }
+
   .arch {
     border-radius: 999px 999px 2rem 2rem;
     overflow: hidden;
@@ -603,9 +611,13 @@
   #menu {
     scroll-margin-top: 9rem;
   }
+  /* A dish opened from a link (for example the home ticker) gets a gold ring. */
+  article[id^="item-"]:target {
+    box-shadow: 0 0 0 3px var(--color-ochre-bright), var(--shadow-lift);
+  }
 }
 
-/* Price ticker and hero entrance. The ticker pauses on hover or with its button. */
+/* Price ticker and hero entrance. The ticker pauses while the pointer is over it or a keyboard user is inside it. */
 @keyframes hb-ticker {
   from {
     transform: translate3d(0, 0, 0);
@@ -629,7 +641,7 @@
   animation: hb-ticker 38s linear infinite;
 }
 .ticker:hover .ticker-track,
-.ticker[data-paused="true"] .ticker-track {
+.ticker:focus-within .ticker-track {
   animation-play-state: paused;
 }
 .rise {

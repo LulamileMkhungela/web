@@ -14,4 +14,20 @@ export function specialIsLiveAt(special: SpecialView, now: Date = new Date()): b
   return true;
 }
 
+/**
+ * The specials for the home page: today's first (every-day specials and the ones for today's
+ * weekday), then the next ones coming up in the week, in day order. At most `limit` are returned.
+ */
+export function homeSpecials(specials: SpecialView[], todayWeekday: number, limit = 3): SpecialView[] {
+  return specials
+    .filter((special) => special.active)
+    .map((special) => ({
+      special,
+      daysAhead: special.weekday === null ? 0 : (special.weekday - todayWeekday + 7) % 7,
+    }))
+    .sort((a, b) => a.daysAhead - b.daysAhead || a.special.sort - b.special.sort)
+    .slice(0, limit)
+    .map(({ special }) => special);
+}
+
 export const WEEKDAY_ORDER = [1, 2, 3, 4, 5, 6, 0] as const;

@@ -1,10 +1,18 @@
 import type { ReactNode } from 'react';
 
-function Svg({ children, className = 'h-5 w-5' }: { children: ReactNode; className?: string }) {
+function Svg({
+  children,
+  className = 'h-5 w-5',
+  filled = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  filled?: boolean;
+}) {
   return (
     <svg
       viewBox="0 0 24 24"
-      fill="none"
+      fill={filled ? 'currentColor' : 'none'}
       stroke="currentColor"
       strokeWidth={1.8}
       strokeLinecap="round"
@@ -17,7 +25,7 @@ function Svg({ children, className = 'h-5 w-5' }: { children: ReactNode; classNa
   );
 }
 
-type IconProps = { className?: string };
+type IconProps = { className?: string; filled?: boolean };
 
 export const SearchIcon = (p: IconProps) => (
   <Svg {...p}>

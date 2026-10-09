@@ -1,8 +1,14 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ProductCard } from '@/components/menu/ProductCard';
 import type { MenuCategory, MenuItem } from '@/lib/types';
+
+const ALL = 'all';
+/** A category is the one in view once its heading has moved above this line (px from the top). */
+const SPY_LINE = 200;
+/** After a tab is clicked, scroll updates are ignored until its smooth scroll has finished. */
+const CLICK_LOCK_MS = 1200;
 
 function matches(item: MenuItem, query: string): boolean {
   return [item.name, item.subtitle, item.description, item.tags.join(' '), item.categoryName]
@@ -11,10 +17,17 @@ function matches(item: MenuItem, query: string): boolean {
     .includes(query);
 }
 
-/** Every category is listed as a jump link. Search and the vegetarian filter narrow the dishes shown. */
+/**
+ * Every category is a tab. The tab for the section in view (or the one just clicked) is shown as
+ * current. A link into the menu, such as /menu#item-x from the home ticker, selects its category.
+ * Search and the vegetarian filter narrow the dishes shown.
+ */
 export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
   const [query, setQuery] = useState('');
   const [vegOnly, setVegOnly] = useState(false);
+  const [active, setActive] = useState<string>(ALL);
+  const lockUntil = useRef(0);
+  const tabRow = useRef<HTMLDivElement>(null);
   const needle = query.trim().toLowerCase();
 
   const visible = useMemo(
@@ -26,6 +39,56 @@ export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
     [categories, vegOnly, needle],
   );
   const total = visible.reduce((sum, category) => sum + category.items.length, 0);
+
+  // Start from the link the visitor opened, if it names a category or a dish.
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash.startsWith('category-')) setActive(hash.slice('category-'.length));
+    if (hash.startsWith('item-')) {
+      const id = hash.slice('item-'.length);
+      const owner = categories.find((category) => category.items.some((item) => item.id === id));
+      if (owner) setActive(owner.id);
+    }
+  }, [categories]);
+
+  // While the visitor scrolls, the current tab is the last category heading above the line.
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      if (Date.now() < lockUntil.current) return;
+      let current = ALL;
+      for (const category of categories) {
+        const heading = document.getElementById(`category-${category.id}`);
+        if (heading && heading.getBoundingClientRect().top <= SPY_LINE) current = category.id;
+      }
+      setActive(current);
+    };
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [categories]);
+
+  // On phones the tab row scrolls sideways. Keep the current tab in view inside that row only.
+  useEffect(() => {
+    const row = tabRow.current;
+    const tab = row ? Array.from(row.querySelectorAll<HTMLElement>('a[data-tab]')).find((el) => el.dataset.tab === active) : undefined;
+    if (!row || !tab) return;
+    const rowBox = row.getBoundingClientRect();
+    const tabBox = tab.getBoundingClientRect();
+    const left = row.scrollLeft + (tabBox.left - rowBox.left) - (rowBox.width - tabBox.width) / 2;
+    row.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+  }, [active]);
+
+  const choose = (tab: string) => {
+    setActive(tab);
+    lockUntil.current = Date.now() + CLICK_LOCK_MS;
+  };
 
   return (
     <>
@@ -64,12 +127,25 @@ export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
 
       <nav aria-label="Menu categories" className="sticky top-[4.5rem] z-30 mt-8 border-b border-line bg-cream/95 backdrop-blur">
         <div className="container-hb">
-          <div className="chip-row py-3 lg:flex-wrap lg:overflow-visible">
-            <a href="#menu" className="chip">
+          <div ref={tabRow} className="chip-row py-3 lg:flex-wrap lg:overflow-visible">
+            <a
+              href="#menu"
+              data-tab={ALL}
+              className="chip"
+              aria-current={active === ALL ? 'true' : undefined}
+              onClick={() => choose(ALL)}
+            >
               All dishes
             </a>
             {categories.map((category) => (
-              <a key={category.id} href={`#category-${category.id}`} className="chip">
+              <a
+                key={category.id}
+                href={`#category-${category.id}`}
+                data-tab={category.id}
+                className="chip"
+                aria-current={active === category.id ? 'true' : undefined}
+                onClick={() => choose(category.id)}
+              >
                 {category.name}
               </a>
             ))}

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CalendarDays, Clock, Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
+import { CalendarDays, Clock, Mail, MapPin, MessageCircle, Navigation, Phone } from 'lucide-react';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { BRAND, LONG_DAYS } from '@/lib/config';
 import { openStatus, sastNow } from '@/lib/time';
@@ -31,8 +31,9 @@ export function VisitBlock({ hours, contact }: { hours: Hours; contact: ContactS
                 href={directions}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-2 inline-block font-semibold text-navy underline underline-offset-4"
+                className="mt-2 inline-flex items-center gap-2 font-semibold text-navy underline underline-offset-4"
               >
+                <Navigation className="h-4 w-4" aria-hidden="true" />
                 Get directions (opens Google Maps)
               </a>
             </div>

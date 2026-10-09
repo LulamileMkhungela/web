@@ -1,3 +1,4 @@
+import { Clock } from 'lucide-react';
 import { LONG_DAYS } from '@/lib/config';
 import type { Hours } from '@/lib/types';
 
@@ -7,7 +8,10 @@ export function OpeningHours({ hours, tone = 'light' }: { hours: Hours; tone?: '
   const dark = tone === 'dark';
   return (
     <div>
-      <p className={`text-lg font-semibold ${dark ? 'text-cream' : 'text-navy'}`}>Opening hours</p>
+      <p className={`flex items-center gap-2 text-lg font-semibold ${dark ? 'text-cream' : 'text-navy'}`}>
+        <Clock className={`h-5 w-5 ${dark ? 'text-ochre-bright' : 'text-ochre-deep'}`} aria-hidden="true" />
+        Opening hours
+      </p>
       <table className="mt-3 w-full border-collapse text-left text-[0.97rem]">
         <tbody>
           {order.map((index) => {

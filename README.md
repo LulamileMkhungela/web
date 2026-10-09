@@ -34,17 +34,19 @@ Until these files exist, the site shows a built-in placeholder mark. The build e
 
 ## Navigation
 
-`lib/nav.ts` is the single source for the grouped navigation. The top bar (desktop), the bottom bar (phone) and the footer all use the same groups:
+`lib/nav.ts` is the single source for the grouped navigation. The top bar (desktop) and the bottom bar (phone) use the same groups:
 
 - **About:** About us, Vision, Mission, How we started.
 - **Menu:** Offering / Meals, each of the six categories, Specials.
 - **Home** and **Contact** sit beside the two groups.
 
+The footer uses the same group names with fewer links: Menu (full menu, weekly specials), About (about us, vision and mission, how we started) and Visit & contact, where each line has an icon. Along the bottom are the FAQ, privacy notice and terms.
+
 On phones, the bottom bar has Home, About, Menu, Contact and Cart. About and Menu open the same lists as sheets. A back-to-top button appears after scrolling.
 
 ## Home page
 
-From top to bottom: the hero (headline, search, a photo carousel of four dishes with a "kitchen right now" note, and how to pay), a price ticker of featured dishes that can be paused, today's specials, the four ways to order, the six menu categories, a "spin the pot" wheel that picks a random dish, the story, three enquiry routes (events, office lunches and table bookings), and the visit block with hours and a map. The three enquiry routes open the one contact form with the right topic already chosen.
+From top to bottom: the hero (headline, search, a photo carousel of four dishes with a "kitchen right now" note, and how to pay), a price ticker of featured dishes (it pauses while the pointer is over it, and each dish opens on the menu), three today's specials (today's first, then the next ones coming up, all the same photo height), the four ways to order, the six menu categories, a "spin the pot" wheel that picks a random dish, the story, three enquiry routes (events, office lunches and table bookings), and the visit block with hours and a map. The three enquiry routes open the one contact form with the right topic already chosen.
 
 ## Menu, photos and carousels
 

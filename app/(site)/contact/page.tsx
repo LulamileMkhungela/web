@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Mail, MapPin, MessageCircle, Navigation, Phone } from 'lucide-react';
 import { ContactForm, type ContactTopic } from '@/components/contact/ContactForm';
 import { FaqList } from '@/components/contact/FaqList';
 import { OpeningHours } from '@/components/site/OpeningHours';
@@ -44,14 +45,18 @@ export default async function ContactPage({
           <aside className="card flex flex-col gap-7 p-6 sm:p-8 lg:sticky lg:top-28">
             <div>
               <h2 className="text-2xl font-bold">Visit or call</h2>
-              <address className="mt-3 text-[1.02rem] not-italic leading-relaxed">
-                {BRAND.street}
-                <br />
-                {BRAND.suburb}, {BRAND.city}, {BRAND.postcode}
-              </address>
+              <div className="mt-3 flex items-start gap-3">
+                <MapPin className="mt-1 h-5 w-5 shrink-0 text-ochre-deep" aria-hidden="true" />
+                <address className="text-[1.02rem] not-italic leading-relaxed">
+                  {BRAND.street}
+                  <br />
+                  {BRAND.suburb}, {BRAND.city}, {BRAND.postcode}
+                </address>
+              </div>
             </div>
             <div className="grid gap-3">
               <a href={`tel:${BRAND.phoneTel}`} className="btn btn-outline btn-block">
+                <Phone className="h-4 w-4" aria-hidden="true" />
                 Call {contact.phone}
               </a>
               <a
@@ -60,14 +65,17 @@ export default async function ContactPage({
                 rel="noopener noreferrer"
                 className="btn btn-primary btn-block"
               >
+                <MessageCircle className="h-4 w-4" aria-hidden="true" />
                 Chat on WhatsApp
                 <span className="sr-only"> (opens in a new tab)</span>
               </a>
               <a href={directions} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-block">
+                <Navigation className="h-4 w-4" aria-hidden="true" />
                 Get directions
                 <span className="sr-only"> (opens in a new tab)</span>
               </a>
               <a href={`mailto:${contact.email}`} className="btn btn-outline btn-block">
+                <Mail className="h-4 w-4" aria-hidden="true" />
                 Email us
               </a>
             </div>

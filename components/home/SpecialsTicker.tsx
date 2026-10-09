@@ -1,49 +1,38 @@
-'use client';
-
-import { useState } from 'react';
-import { Pause, Play } from 'lucide-react';
 import { formatZAR } from '@/lib/money';
 
+export type TickerDish = { id: string; name: string; priceCents: number };
+
 /**
- * Price ticker for featured dishes. It pauses on hover, has its own pause button,
- * and stops for visitors who ask for reduced motion.
+ * Price ticker for featured dishes. It pauses while the pointer is over it, or while a keyboard
+ * user has focus inside it. Each dish name is a plain link to that dish on the menu, so the browser
+ * makes it the target (it gets a gold ring, see globals.css). Reduced motion gets a still line.
  */
-export function SpecialsTicker({ items }: { items: { name: string; priceCents: number }[] }) {
-  const [paused, setPaused] = useState(false);
+export function SpecialsTicker({ items }: { items: TickerDish[] }) {
   if (items.length === 0) return null;
-  const line = items.map((item) => `${item.name} ${formatZAR(item.priceCents)}`);
   return (
-    <div className="flex items-center gap-4 border-b border-navy/10 bg-white pr-4 sm:pr-6">
-      <div
-        role="region"
-        aria-label="Featured dishes and prices"
-        className="ticker min-w-0 flex-1 overflow-hidden py-4"
-        data-paused={paused ? 'true' : undefined}
-      >
+    <div className="border-b border-navy/10 bg-white">
+      <div role="region" aria-label="Featured dishes and prices" className="ticker overflow-hidden py-4">
         <div className="ticker-track flex w-max items-center gap-10 whitespace-nowrap">
-          {[...line, ...line].map((text, i) => (
-            <span
-              key={`${text}-${i}`}
-              aria-hidden={i >= line.length ? true : undefined}
-              className="flex items-center gap-10 font-display text-lg font-semibold text-navy"
-            >
-              {text}
-              <span className="text-ochre" aria-hidden="true">
-                ✦
-              </span>
-            </span>
-          ))}
+          {/* The list is repeated so the loop has no gap. The repeat is hidden from screen readers and the keyboard. */}
+          {[...items, ...items].map((item, index) => {
+            const repeat = index >= items.length;
+            return (
+              <a
+                key={`${item.id}-${index}`}
+                href={`/menu#item-${item.id}`}
+                aria-hidden={repeat ? true : undefined}
+                tabIndex={repeat ? -1 : undefined}
+                className="flex items-center gap-10 font-display text-lg font-semibold text-navy no-underline hover:text-ochre-deep hover:underline underline-offset-4"
+              >
+                {`${item.name} ${formatZAR(item.priceCents)}`}
+                <span className="text-ochre" aria-hidden="true">
+                  ✦
+                </span>
+              </a>
+            );
+          })}
         </div>
       </div>
-      <button
-        type="button"
-        onClick={() => setPaused((value) => !value)}
-        aria-label={paused ? 'Play the prices ticker' : 'Pause the prices ticker'}
-        className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-navy/15 bg-white px-4 text-sm font-semibold text-navy transition-colors hover:border-navy"
-      >
-        {paused ? <Play className="h-4 w-4" aria-hidden="true" /> : <Pause className="h-4 w-4" aria-hidden="true" />}
-        {paused ? 'Play' : 'Pause'}
-      </button>
     </div>
   );
 }

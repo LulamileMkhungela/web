@@ -125,7 +125,7 @@ export function BottomNav() {
           <li>
             <button type="button" className="bottom-tab" onClick={openCart}>
               <span className="relative">
-                <BagIcon className="h-6 w-6" />
+                <BagIcon className="h-6 w-6" filled={count > 0} />
                 {count > 0 ? (
                   <span className="absolute -right-2.5 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-ochre-bright px-1 text-[0.7rem] font-bold text-navy">
                     {count}

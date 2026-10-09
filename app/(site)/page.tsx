@@ -16,6 +16,7 @@ import { kitchenEtaMinutes } from '@/lib/kitchen';
 import { listCategories, listItems, listSpecials } from '@/lib/menu';
 import { formatZAR } from '@/lib/money';
 import { getSiteSettings } from '@/lib/settings';
+import { homeSpecials } from '@/lib/specials';
 import { openStatus, sastNow } from '@/lib/time';
 
 export const dynamic = 'force-dynamic';
@@ -59,15 +60,16 @@ export default function HomePage() {
     ];
   });
 
-  const todaySpecials = listSpecials()
-    .filter((special) => special.active && (special.weekday === null || special.weekday === today))
-    .map((special) => specialCardData(special, now));
+  // Three cards: today's specials first, then the next ones coming up this week.
+  const todaySpecials = homeSpecials(listSpecials(), today, 3).map((special) => specialCardData(special, now));
 
   const wheelItems: WheelItem[] = shuffle(items.filter((item) => item.available))
     .slice(0, 8)
     .map((item) => ({ id: item.id, name: item.name, priceCents: item.priceCents, image: item.images[0] ?? '' }));
 
-  const ticker = items.filter((item) => item.featured).map((item) => ({ name: item.name, priceCents: item.priceCents }));
+  const ticker = items
+    .filter((item) => item.featured)
+    .map((item) => ({ id: item.id, name: item.name, priceCents: item.priceCents }));
   const todayLabel = LONG_DAYS[today];
   const closesToday = settings.hours[today]?.close;
   const openLine = status.isOpen && closesToday ? `Open today until ${closesToday}` : status.detail;
@@ -80,7 +82,7 @@ export default function HomePage() {
       <section aria-labelledby="today-heading" className="container-hb py-16 md:py-24">
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <SectionHeading id="today-heading" kicker={`This ${todayLabel}`} script="Today on the menu" title="Today’s specials">
-            <p>Our weekly specials change through the week. Every price includes VAT.</p>
+            <p>Today’s specials come first, then the next ones coming up this week. Every price includes VAT.</p>
           </SectionHeading>
           <Link href="/specials" className="btn btn-outline self-start md:self-auto">
             See the full week
@@ -91,7 +93,7 @@ export default function HomePage() {
             <SpecialsGrid specials={todaySpecials} />
           ) : (
             <p>
-              No specials today.{' '}
+              No specials are listed right now.{' '}
               <Link href="/specials" className="font-semibold text-navy underline underline-offset-4">
                 See this week’s specials
               </Link>
