@@ -1,135 +1,76 @@
 import Link from 'next/link';
-import { BRAND, DEFAULT_STORE_LINKS, LONG_DAYS } from '@/lib/config';
-import { whatsappLink } from '@/lib/whatsapp';
 import { Logo } from '@/components/ui/Logo';
-import { SubscribeForm } from '@/components/site/SubscribeForm';
-import type { Hours, ContactSettings, StoreLinks } from '@/lib/types';
-import { fromMinutes, toMinutes } from '@/lib/time';
+import { BRAND } from '@/lib/config';
+import { ABOUT_LINKS, MENU_LINKS } from '@/lib/nav';
+import type { ContactSettings } from '@/lib/types';
+import { whatsappLink } from '@/lib/whatsapp';
 
-export function SiteFooter({
-  hours,
-  contact,
-  storeLinks,
-}: {
-  hours: Hours;
-  contact: ContactSettings;
-  storeLinks: StoreLinks;
-}) {
-  const waNumber = contact.whatsapp.replace(/\D/g, '') || BRAND.whatsappNumber;
-  const ubereats = storeLinks.ubereats || DEFAULT_STORE_LINKS.ubereats;
-  const mrd = storeLinks.mrd || DEFAULT_STORE_LINKS.mrd;
-  const reorderedHours = [1, 2, 3, 4, 5, 6, 0].map((index) => ({ day: LONG_DAYS[index], hours: hours[index] }));
+export function SiteFooter({ logo, contact }: { logo: string | null; contact: ContactSettings }) {
+  const year = new Date().getFullYear();
   return (
-    <footer className="no-print grain relative mt-24 overflow-hidden bg-navy text-cream/80">
-      <div className="band-zigzag opacity-70" aria-hidden="true" />
-      <div className="mx-auto grid w-full max-w-[1240px] gap-12 px-5 py-16 sm:px-8 md:grid-cols-2 xl:grid-cols-[1.2fr_1fr_1fr_1fr]">
+    <footer className="relative mt-24 overflow-hidden bg-navy text-cream/85">
+      <div className="band-stripe" aria-hidden="true" />
+      <div className="container-hb grid gap-12 py-16 sm:grid-cols-2 lg:grid-cols-4">
         <div className="flex flex-col gap-5">
-          <Logo tone="light" />
-          <p className="max-w-sm text-[0.95rem] leading-[1.8] text-cream/75">{BRAND.description}</p>
-          <p className="eyebrow eyebrow-light text-[2.2rem]">{BRAND.tagline}</p>
+          <Logo src={logo} tone="light" />
+          <p className="max-w-xs leading-relaxed text-cream/80">
+            Traditional African food, made with heritage and care in Pretoria Central.
+          </p>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <h2 className="kicker kicker-light font-sans text-[0.72rem] normal-case">Visit us</h2>
-          <address className="not-italic leading-[1.8] text-cream/85">
+        <nav aria-label="Footer menu" className="flex flex-col gap-3">
+          <p className="kicker kicker-light">Menu</p>
+          {MENU_LINKS.map((link) => (
+            <Link key={link.href} href={link.href} className="text-cream/85 no-underline hover:text-cream hover:underline">
+              {link.label}
+            </Link>
+          ))}
+        </nav>
+
+        <nav aria-label="Footer about" className="flex flex-col gap-3">
+          <p className="kicker kicker-light">About &amp; help</p>
+          {ABOUT_LINKS.map((link) => (
+            <Link key={link.href} href={link.href} className="text-cream/85 no-underline hover:text-cream hover:underline">
+              {link.label}
+            </Link>
+          ))}
+          <Link href="/contact#faq" className="text-cream/85 no-underline hover:text-cream hover:underline">
+            Good to know (FAQ)
+          </Link>
+          <Link href="/contact" className="text-cream/85 no-underline hover:text-cream hover:underline">
+            Contact us
+          </Link>
+          <Link href="/privacy" className="text-cream/85 no-underline hover:text-cream hover:underline">
+            Privacy notice
+          </Link>
+          <Link href="/terms" className="text-cream/85 no-underline hover:text-cream hover:underline">
+            Terms
+          </Link>
+        </nav>
+
+        <div className="flex flex-col gap-3">
+          <p className="kicker kicker-light">Visit &amp; contact</p>
+          <p className="leading-relaxed">
             {BRAND.street}
             <br />
-            {BRAND.suburb}, {BRAND.city}
-            <br />
-            {BRAND.postcode}, {BRAND.region}, South Africa
-          </address>
-          <ul className="grid gap-1.5 text-sm">
-            {reorderedHours.map((row) => (
-              <li key={row.day} className="flex justify-between gap-4 border-b border-cream/10 py-1">
-                <span>{row.day}</span>
-                <span className="text-cream/90">
-                  {row.hours ? `${fromMinutes(toMinutes(row.hours.open))} – ${fromMinutes(toMinutes(row.hours.close))}` : 'Closed'}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <h2 className="kicker kicker-light font-sans text-[0.72rem] normal-case">Order &amp; contact</h2>
-          <ul className="grid gap-2.5 text-[0.95rem]">
-            <li>
-              <Link href="/menu" className="text-cream no-underline hover:text-ochre-bright">
-                Order online for collection
-              </Link>
-            </li>
-            <li>
-              <a
-                href={whatsappLink(undefined, waNumber)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-cream no-underline hover:text-ochre-bright"
-              >
-                WhatsApp us (opens in new tab)
-              </a>
-            </li>
-            <li>
-              <a href={`tel:+${contact.phone.replace(/\D/g, '')}`} className="text-cream no-underline hover:text-ochre-bright">
-                Call {contact.phone}
-              </a>
-            </li>
-            <li>
-              <a href={`mailto:${contact.email}`} className="text-cream no-underline hover:text-ochre-bright">
-                {contact.email}
-              </a>
-            </li>
-            <li>
-              <a href={ubereats} target="_blank" rel="noopener noreferrer" className="text-cream no-underline hover:text-ochre-bright">
-                Uber Eats (opens in new tab)
-              </a>
-            </li>
-            <li>
-              <a href={mrd} target="_blank" rel="noopener noreferrer" className="text-cream no-underline hover:text-ochre-bright">
-                Mr D (opens in new tab)
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <h2 className="kicker kicker-light font-sans text-[0.72rem] normal-case">Explore</h2>
-          <ul className="grid gap-2.5 text-[0.95rem]">
-            {[
-              ['/about', 'About Us'],
-              ['/about#how-we-started', 'How We Started'],
-              ['/menu', 'Offering / Meals'],
-              ['/specials', 'This Week’s Specials'],
-              ['/contact', 'Contact & Enquiries'],
-              ['/search', 'Search the menu'],
-            ].map(([href, label]) => (
-              <li key={href}>
-                <Link href={href} className="text-cream no-underline hover:text-ochre-bright">
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-2 rounded-3xl border border-cream/10 bg-navy-soft/60 p-5">
-            <SubscribeForm variant="dark" />
-          </div>
+            {BRAND.suburb}, {BRAND.city}, {BRAND.postcode}
+          </p>
+          <a href={`tel:${BRAND.phoneTel}`} className="text-cream no-underline hover:underline">
+            {contact.phone}
+          </a>
+          <a href={whatsappLink('Hi Heritage Bites, I have a question.', contact.whatsapp)} target="_blank" rel="noopener noreferrer" className="text-cream no-underline hover:underline">
+            WhatsApp us
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
+          <a href={`mailto:${contact.email}`} className="break-all text-cream no-underline hover:underline">
+            {contact.email}
+          </a>
         </div>
       </div>
-
-      <div className="border-t border-cream/10">
-        <div className="mx-auto flex w-full max-w-[1240px] flex-col gap-3 px-5 py-6 text-xs text-cream/60 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p>© {new Date().getFullYear()} {BRAND.name}. All rights reserved.</p>
-          <p className="text-cream/70">Demo build: card and Yoco payments are simulated. Nothing is charged.</p>
-          <nav aria-label="Legal" className="flex gap-5">
-            <Link href="/privacy" className="text-cream/70 no-underline hover:text-ochre-bright">
-              Privacy
-            </Link>
-            <Link href="/terms" className="text-cream/70 no-underline hover:text-ochre-bright">
-              Terms
-            </Link>
-            <Link href="/staff" className="text-cream/70 no-underline hover:text-ochre-bright">
-              Staff
-            </Link>
-          </nav>
+      <div className="border-t border-white/10">
+        <div className="container-hb flex flex-col gap-2 py-6 text-sm text-cream/70 sm:flex-row sm:items-center sm:justify-between">
+          <p>© {year} Heritage Bites. All rights reserved.</p>
+          <p>{BRAND.tagline}</p>
         </div>
       </div>
     </footer>

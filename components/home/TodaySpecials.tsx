@@ -1,112 +1,84 @@
-'use client';
-
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Clock, Plus } from 'lucide-react';
-import { useCart } from '@/components/cart/CartProvider';
+import { AddToCartButton } from '@/components/cart/CartButtons';
+import { LONG_DAYS } from '@/lib/config';
 import { formatZAR } from '@/lib/money';
+import { specialIsLiveAt } from '@/lib/specials';
 import type { SpecialView } from '@/lib/types';
 
-export type SpecialCardData = SpecialView & { live: boolean; windowLabel: string | null; image: string };
+export type SpecialCardData = {
+  id: string;
+  title: string;
+  description: string;
+  priceCents: number;
+  regularPriceCents: number;
+  itemName: string;
+  image: string;
+  live: boolean;
+  dayLabel: string;
+  windowLabel: string | null;
+};
+
+export function specialCardData(special: SpecialView, now: Date): SpecialCardData {
+  return {
+    id: special.id,
+    title: special.title,
+    description: special.description,
+    priceCents: special.priceCents,
+    regularPriceCents: special.regularPriceCents,
+    itemName: special.itemName,
+    image: special.itemImage,
+    live: specialIsLiveAt(special, now) && special.available,
+    dayLabel: special.weekday === null ? 'Every day' : `${LONG_DAYS[special.weekday]}s`,
+    windowLabel: special.windowStart && special.windowEnd ? `Served ${special.windowStart} to ${special.windowEnd}` : null,
+  };
+}
 
 export function SpecialCard({ special }: { special: SpecialCardData }) {
-  const cart = useCart();
-  const router = useRouter();
-  const line = {
-    key: `special:${special.id}`,
-    name: `${special.title}: ${special.itemName}`,
-    priceCents: special.priceCents,
-    image: special.image,
-  };
-  const saving = special.regularPriceCents > special.priceCents ? special.regularPriceCents - special.priceCents : 0;
+  const saving = special.regularPriceCents > special.priceCents;
   return (
     <article className="card flex h-full flex-col overflow-hidden">
-      <div className="relative">
+      <div className="relative aspect-[4/3] bg-cream-deep">
         {special.image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={special.image} alt={special.itemName} className="aspect-[4/3] w-full object-cover" loading="lazy" />
-        ) : (
-          <div className="aspect-[4/3] w-full bg-navy/10" aria-hidden="true" />
-        )}
-        <div className="absolute left-4 top-4 flex gap-2">
-          {special.live ? (
-            <span className="rounded-full bg-success px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">Live now</span>
-          ) : null}
-          {special.weekday === null ? (
-            <span className="rounded-full bg-navy px-3 py-1 text-xs font-bold uppercase tracking-wide text-cream">Every day</span>
-          ) : null}
-        </div>
+          <img src={special.image} alt={special.itemName} className="h-full w-full object-cover" loading="lazy" />
+        ) : null}
+        <span className="absolute left-4 top-4 rounded-full bg-navy px-3 py-1 text-xs font-semibold uppercase tracking-wider text-cream">
+          {special.dayLabel}
+        </span>
       </div>
-      <div className="flex flex-1 flex-col gap-3 p-6">
-        <div>
-          <p className="text-[0.68rem] font-bold uppercase tracking-[0.2em] text-ochre-deep">{special.title}</p>
-          <h3 className="mt-1 text-xl font-bold leading-snug text-navy">{special.itemName}</h3>
-          <p className="mt-2 text-sm leading-relaxed">{special.description}</p>
-        </div>
-        {special.windowLabel ? (
-          <p className="inline-flex items-center gap-2 text-sm font-semibold text-navy">
-            <Clock className="h-4 w-4 text-ochre-deep" aria-hidden="true" />
-            {special.windowLabel}
+      <div className="flex flex-1 flex-col gap-3 p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <h3 className="text-xl font-bold leading-snug">{special.title}</h3>
+          <p className="shrink-0 text-right">
+            <span className="block text-xl font-bold text-navy">{formatZAR(special.priceCents)}</span>
+            {saving ? <span className="block text-sm line-through">{formatZAR(special.regularPriceCents)}</span> : null}
           </p>
-        ) : null}
-        <div className="mt-auto flex items-end justify-between gap-3 pt-2">
-          <div>
-            <p className="font-display text-2xl font-bold text-navy">{formatZAR(special.priceCents)}</p>
-            {saving > 0 ? (
-              <p className="text-xs text-muted">
-                <span className="line-through">{formatZAR(special.regularPriceCents)}</span> · save {formatZAR(saving)}
-              </p>
-            ) : null}
-          </div>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              disabled={!special.available || !special.live}
-              onClick={() => cart.add(line)}
-              className="btn btn-navy btn-sm"
-              aria-label={`Add ${special.title} to cart`}
-            >
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              Add
-            </button>
-            <button
-              type="button"
-              disabled={!special.available || !special.live}
-              onClick={() => {
-                cart.add(line);
-                router.push('/checkout');
-              }}
-              className="btn btn-ochre btn-sm"
-            >
-              Order
-            </button>
-          </div>
         </div>
-        {!special.live ? (
-          <p className="text-xs text-muted">
-            <Link href="/specials" className="font-semibold text-navy underline underline-offset-4">
-              See when this special is on
-            </Link>
-          </p>
-        ) : null}
+        <p className="leading-relaxed">{special.description}</p>
+        <p className="text-sm font-semibold text-ochre-deep">
+          {special.windowLabel ?? `On ${special.dayLabel.toLowerCase()}`}
+        </p>
+        <div className="mt-auto pt-2">
+          <AddToCartButton
+            item={{
+              lineKey: `special:${special.id}`,
+              name: special.title,
+              priceCents: special.priceCents,
+              image: special.image,
+            }}
+            disabled={!special.live}
+            label={special.live ? 'Add to cart' : 'Not available right now'}
+          />
+        </div>
       </div>
     </article>
   );
 }
 
-export function TodaySpecials({ specials, todayLabel }: { specials: SpecialCardData[]; todayLabel: string }) {
-  if (specials.length === 0) {
-    return (
-      <div className="card p-8 text-center">
-        <p className="text-lg font-semibold text-navy">No specials are listed for {todayLabel}.</p>
-        <p className="mt-2">Browse the full menu, or check the week’s planner.</p>
-      </div>
-    );
-  }
+export function SpecialsGrid({ specials }: { specials: SpecialCardData[] }) {
   return (
-    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-      {specials.map((s) => (
-        <SpecialCard key={s.id} special={s} />
+    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {specials.map((special) => (
+        <SpecialCard key={special.id} special={special} />
       ))}
     </div>
   );

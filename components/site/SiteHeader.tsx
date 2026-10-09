@@ -2,127 +2,159 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { Menu, Search, ShoppingBag, X } from 'lucide-react';
-import { NAV_LINKS } from '@/lib/config';
-import { useCart } from '@/components/cart/CartProvider';
+import { useEffect, useRef, useState } from 'react';
+import { CartToggle } from '@/components/cart/CartButtons';
 import { SearchBox } from '@/components/search/SearchBox';
 import { Logo } from '@/components/ui/Logo';
+import { ChevronDownIcon, SearchIcon } from '@/components/ui/Icons';
+import { ABOUT_LINKS, MENU_LINKS, type NavLink } from '@/lib/nav';
 
-export function SiteHeader() {
+type OpenGroup = 'about' | 'menu' | null;
+
+function Dropdown({
+  id,
+  label,
+  links,
+  open,
+  active,
+  onToggle,
+}: {
+  id: string;
+  label: string;
+  links: NavLink[];
+  open: boolean;
+  active: boolean;
+  onToggle: () => void;
+}) {
+  const panelId = `${id}-menu`;
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        className="nav-link"
+        aria-expanded={open}
+        aria-controls={panelId}
+        aria-current={active ? 'true' : undefined}
+        onClick={onToggle}
+      >
+        {label}
+        <ChevronDownIcon className={`h-4 w-4 transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      {open ? (
+        <div
+          id={panelId}
+          className="absolute left-1/2 top-full z-50 mt-3 w-72 -translate-x-1/2 rounded-2xl border border-line bg-white p-2 shadow-lift"
+        >
+          <ul className="flex max-h-[70vh] flex-col overflow-y-auto">
+            {links.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="flex min-h-11 items-center rounded-xl px-4 py-2 text-[0.95rem] font-semibold text-navy no-underline hover:bg-cream focus-visible:bg-cream"
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function SiteHeader({ logo }: { logo: string | null }) {
   const pathname = usePathname();
-  const cart = useCart();
+  const [openGroup, setOpenGroup] = useState<OpenGroup>(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
 
-  const isActive = (href: string) => {
-    if (href.includes('#')) return false;
-    return href === '/' ? pathname === '/' : pathname.startsWith(href);
-  };
+  // Close menus whenever the page changes.
+  useEffect(() => {
+    setOpenGroup(null);
+    setSearchOpen(false);
+  }, [pathname]);
+
+  // Close the open dropdown on outside click or Escape.
+  useEffect(() => {
+    if (!openGroup) return;
+    const onPointer = (event: PointerEvent) => {
+      if (!headerRef.current?.contains(event.target as Node)) setOpenGroup(null);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpenGroup(null);
+    };
+    document.addEventListener('pointerdown', onPointer);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onPointer);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [openGroup]);
+
+  const toggle = (group: Exclude<OpenGroup, null>) => setOpenGroup((current) => (current === group ? null : group));
+  const aboutActive = pathname.startsWith('/about');
+  const menuActive = pathname.startsWith('/menu') || pathname.startsWith('/specials');
 
   return (
-    <header className="sticky top-0 z-40 border-b border-navy/10 bg-cream/95 shadow-[0_1px_0_rgba(183,126,35,0.12)] backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-[1240px] items-center gap-3 px-4 py-3 sm:gap-4 sm:px-8 sm:py-3.5">
-        <Logo className="min-w-0 shrink" compact />
+    <header ref={headerRef} className="sticky top-0 z-40 border-b border-line bg-cream/95 backdrop-blur">
+      <div className="container-hb flex h-[4.5rem] items-center justify-between gap-3">
+        <Logo src={logo} />
 
-        <nav aria-label="Main navigation" className="ml-auto hidden min-[1180px]:flex">
-          <ul className="flex items-center gap-1">
-            {NAV_LINKS.map((link) => {
-              const active = isActive(link.href);
-              return (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    aria-current={active ? 'page' : undefined}
-                    className={`group relative block whitespace-nowrap rounded-full px-3 py-2 text-[0.88rem] font-semibold no-underline transition-colors ${
-                      active ? 'text-ochre-deep' : 'text-navy hover:text-ochre-deep'
-                    }`}
-                  >
-                    {link.label}
-                    <span
-                      aria-hidden="true"
-                      className={`absolute bottom-0.5 left-3 right-3 h-[2px] origin-left rounded-full bg-ochre transition-transform duration-300 ${
-                        active ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
-                      }`}
-                    />
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+        {/* Desktop navigation: the same two groups as the mobile bottom bar. */}
+        <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
+          <Link
+            href="/"
+            className="nav-link"
+            aria-current={pathname === '/' ? 'page' : undefined}
+          >
+            Home
+          </Link>
+          <Dropdown
+            id="about"
+            label="About"
+            links={ABOUT_LINKS}
+            open={openGroup === 'about'}
+            active={aboutActive}
+            onToggle={() => toggle('about')}
+          />
+          <Dropdown
+            id="menu"
+            label="Menu"
+            links={MENU_LINKS}
+            open={openGroup === 'menu'}
+            active={menuActive}
+            onToggle={() => toggle('menu')}
+          />
+          <Link
+            href="/contact"
+            className="nav-link"
+            aria-current={pathname.startsWith('/contact') ? 'page' : undefined}
+          >
+            Contact
+          </Link>
         </nav>
 
-        <div className="ml-auto flex shrink-0 items-center gap-2 min-[1180px]:ml-2">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
-            onClick={() => setSearchOpen((v) => !v)}
+            className="icon-btn"
             aria-expanded={searchOpen}
             aria-controls="site-search"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-navy/15 bg-white text-navy transition-colors hover:border-ochre hover:text-ochre-deep"
+            onClick={() => setSearchOpen((value) => !value)}
           >
-            <span className="sr-only">{searchOpen ? 'Close search' : 'Open search'}</span>
-            {searchOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Search className="h-5 w-5" aria-hidden="true" />}
+            <SearchIcon />
+            <span className="sr-only">Search the menu</span>
           </button>
-
-          <button
-            type="button"
-            onClick={cart.open}
-            className="relative inline-flex h-11 items-center gap-2 rounded-full bg-navy px-4 text-sm font-semibold text-cream transition-colors hover:bg-ochre hover:text-navy"
-            aria-label={`Open your basket, ${cart.count} item${cart.count === 1 ? '' : 's'}`}
-          >
-            <ShoppingBag className="h-4.5 w-4.5" aria-hidden="true" />
-            <span className="hidden sm:inline">Basket</span>
-            <span className="inline-flex min-w-[1.5rem] items-center justify-center rounded-full bg-ochre px-1.5 text-xs font-bold text-navy">
-              {cart.count}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-expanded={menuOpen}
-            aria-controls="mobile-menu"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-navy/15 bg-white text-navy min-[1180px]:hidden"
-          >
-            <span className="sr-only">{menuOpen ? 'Close menu' : 'Open menu'}</span>
-            {menuOpen ? <X className="h-5 w-5" aria-hidden="true" /> : <Menu className="h-5 w-5" aria-hidden="true" />}
-          </button>
+          <CartToggle />
         </div>
       </div>
 
       {searchOpen ? (
-        <div id="site-search" className="border-t border-navy/10 bg-cream">
-          <div className="mx-auto w-full max-w-[1240px] px-5 py-4 sm:px-8">
-            <SearchBox autoFocus onNavigate={() => setSearchOpen(false)} />
+        <div id="site-search" className="border-t border-line bg-white">
+          <div className="container-hb py-4">
+            <SearchBox variant="panel" autoFocus onNavigate={() => setSearchOpen(false)} />
           </div>
-        </div>
-      ) : null}
-
-      {menuOpen ? (
-        <div id="mobile-menu" className="border-t border-navy/10 bg-cream min-[1180px]:hidden">
-          <nav aria-label="Mobile navigation" className="mx-auto w-full max-w-[1240px] px-5 py-5 sm:px-8">
-            <ul className="grid gap-1 sm:grid-cols-2">
-              {NAV_LINKS.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="block rounded-2xl px-4 py-3 text-base font-semibold text-navy no-underline hover:bg-white"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <Link href="/menu" onClick={() => setMenuOpen(false)} className="btn btn-ochre">
-                Order now
-              </Link>
-              <Link href="/checkout?channel=whatsapp" onClick={() => setMenuOpen(false)} className="btn btn-outline">
-                Order on WhatsApp
-              </Link>
-            </div>
-          </nav>
         </div>
       ) : null}
     </header>

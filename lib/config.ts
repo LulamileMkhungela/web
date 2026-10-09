@@ -26,21 +26,14 @@ export const TIMEZONE = 'Africa/Johannesburg';
 
 export const SITE_URL = (process.env.SITE_URL || 'http://localhost:3000').replace(/\/$/, '');
 
+// Pretoria delivery pages used until the owner pastes the Heritage Bites store links in
+// staff Settings. Store-specific pages were not found when this was built.
 export const DEFAULT_STORE_LINKS = {
-  ubereats: 'https://www.ubereats.com/za',
-  mrd: 'https://www.mrd.com/',
+  ubereats: 'https://www.ubereats.com/za/find-near-me/city-of-tshwane-gp/food',
+  mrd: 'https://www.mrd.com/delivery/in/pretoria',
 } as const;
 
 export const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
 export const LONG_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
 
-export const NAV_LINKS = [
-  { href: '/', label: 'Home' },
-  { href: '/about', label: 'About Us' },
-  { href: '/about#vision', label: 'Vision' },
-  { href: '/about#mission', label: 'Mission' },
-  { href: '/about#how-we-started', label: 'How We Started' },
-  { href: '/menu', label: 'Offering / Meals' },
-  { href: '/specials', label: 'Specials' },
-  { href: '/contact', label: 'Contact' },
-] as const;
+

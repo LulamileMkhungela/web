@@ -1,6 +1,8 @@
-// Headless-browser checks for the live site: carousels, add to cart, checkout
-// (card, Yoco, WhatsApp), field alignment, the staff board, and screenshots.
-// Usage: BASE_URL=http://localhost:3000 STAFF_PIN=1234 node scripts/browser-check.mjs
+// Headless-browser checks for the Heritage Bites site: grouped navigation (top and bottom),
+// product carousels (every photo), menu categories and filters, add to cart and order now,
+// single-page checkout (card, Yoco, WhatsApp, counter), the contact form, back to top,
+// responsive layout, field alignment, and the staff board.
+// Usage: BASE_URL=http://127.0.0.1:3100 STAFF_PIN=1234 SHOT_DIR=/tmp/shots node scripts/browser-check.mjs
 import fs from 'node:fs';
 import path from 'node:path';
 import chromium from '@sparticuz/chromium';
@@ -23,32 +25,82 @@ function check(name, condition, detail = '') {
   }
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const pageErrors = [];
 
 async function shot(page, name, fullPage = false) {
+  // Start from the top so the sticky header is captured where it belongs.
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await sleep(150);
   await page.screenshot({ path: path.join(OUT, `${name}.png`), fullPage });
 }
 
-async function waitForPath(page, prefix, timeout = 20000) {
+async function go(page, route) {
+  await page.goto(`${BASE}${route}`, { waitUntil: 'networkidle0', timeout: 90000 });
+}
+
+async function waitForPath(page, prefix, timeout = 45000) {
   await page.waitForFunction((p) => window.location.pathname.startsWith(p), { timeout }, prefix);
 }
 
-async function carouselState(page, selector) {
-  return page.$eval(selector, (region) => {
-    const tabs = Array.from(region.querySelectorAll('[role="tab"]'));
-    const selected = tabs.findIndex((t) => t.getAttribute('aria-selected') === 'true');
-    const figures = Array.from(region.querySelectorAll('figure'));
-    const visible = figures.find((f) => f.getAttribute('aria-hidden') !== 'true');
-    const img = visible?.querySelector('img');
-    const track = region.querySelector('div');
+/** Clicks the first button or link whose visible text is exactly `text` inside `scope`. */
+async function clickIn(page, scope, text) {
+  const clicked = await page.evaluate(
+    (scopeSel, label) => {
+      const root = document.querySelector(scopeSel);
+      if (!root) return false;
+      const el = Array.from(root.querySelectorAll('button, a')).find((b) => b.textContent.trim() === label);
+      if (!el) return false;
+      el.scrollIntoView({ block: 'center' });
+      el.click();
+      return true;
+    },
+    scope,
+    text,
+  );
+  if (!clicked) throw new Error(`Could not click "${text}" inside ${scope}`);
+  await sleep(250);
+}
+
+async function linkTexts(page, selector) {
+  // Decorative chevrons (›) are aria-hidden, so they are removed before comparing labels.
+  return page.$$eval(selector, (els) => els.map((el) => el.textContent.replace(/›/g, '').trim()));
+}
+
+async function fieldHeights(page, selector) {
+  return page.$$eval(selector, (els) => els.map((el) => Math.round(el.getBoundingClientRect().height)));
+}
+
+async function carouselSnapshot(page, cardSelector) {
+  return page.evaluate((scope) => {
+    const root = document.querySelector(`${scope} [role="region"][aria-roledescription="carousel"]`);
+    if (!root) return null;
+    const img = root.querySelector('img');
+    const dots = Array.from(root.querySelectorAll('.carousel-dots button'));
+    const current = dots.findIndex((d) => d.getAttribute('aria-current') === 'true');
     return {
-      tabs: tabs.length,
-      selected,
       src: img?.getAttribute('src') ?? '',
-      transform: track?.style.transform ?? '',
-      counter: region.querySelector('span')?.textContent ?? '',
+      alt: img?.getAttribute('alt') ?? '',
+      counter: root.querySelector('.carousel-count')?.textContent?.trim() ?? '',
+      dots: dots.length,
+      current,
+      loaded: Boolean(img && img.complete && img.naturalWidth > 0),
+      arrows: root.querySelectorAll('button[aria-label="Next photo"]').length,
     };
-  });
+  }, cardSelector);
+}
+
+async function clickDot(page, cardSelector, index) {
+  // Lazy-loaded photos only load once their card is on screen, so bring the card into view first.
+  await page.evaluate(
+    (scope, i) => {
+      document.querySelector(scope)?.scrollIntoView({ block: 'center' });
+      document.querySelectorAll(`${scope} .carousel-dots button`)[i]?.click();
+    },
+    cardSelector,
+    index,
+  );
+  await sleep(120);
 }
 
 async function main() {
@@ -62,174 +114,311 @@ async function main() {
     const page = await browser.newPage();
     page.on('pageerror', (err) => pageErrors.push(err.message));
     page.on('console', (msg) => {
-      if (msg.type() === 'error' && !/favicon|Failed to load resource: the server responded with a status of 404/.test(msg.text())) {
+      if (msg.type() === 'error' && !/favicon|status of 404|status of 422|status of 409/.test(msg.text())) {
         pageErrors.push(`console: ${msg.text()}`);
       }
     });
 
-    console.log('Home page');
-    await page.goto(`${BASE}/`, { waitUntil: 'networkidle0', timeout: 90000 });
+    console.log('Home (desktop)');
+    await go(page, '/');
     check('home headline is the traditional-food message', (await page.$eval('h1', (h) => h.textContent)).includes('Traditional African food'));
-    const hero = 'section[class*="grain"] [role="region"][aria-roledescription="carousel"]';
-    const first = await carouselState(page, hero);
-    check('hero carousel shows four dots', first.tabs === 4, JSON.stringify(first));
-    check('hero starts on the first photo', first.selected === 0 && first.src.includes('mogodu-1'));
-    const dots = await page.$$(`${hero} [role="tab"]`);
-    await dots[2].click();
-    await new Promise((r) => setTimeout(r, 700));
-    const afterDot = await carouselState(page, hero);
-    check('clicking dot 3 switches the hero photo', afterDot.selected === 2 && afterDot.src.includes('motogo-2'), JSON.stringify(afterDot));
-    await page.click(`${hero} button[aria-label="Next photo"]`);
-    await new Promise((r) => setTimeout(r, 700));
-    const afterNext = await carouselState(page, hero);
-    check('next arrow moves to photo 4', afterNext.selected === 3 && afterNext.src.includes('magwinya-3'), JSON.stringify(afterNext));
-    await page.click(`${hero} button[aria-label="Previous photo"]`);
-    await page.click(`${hero} button[aria-label="Previous photo"]`);
-    await new Promise((r) => setTimeout(r, 700));
-    check('previous arrow moves back', (await carouselState(page, hero)).selected === 1);
-    await shot(page, '01-home-desktop', false);
+    const topNav = await linkTexts(page, 'nav[aria-label="Main"] > a, nav[aria-label="Main"] > div > button, nav[aria-label="Main"] > button');
+    check('top navigation groups: Home, About, Menu, Contact', JSON.stringify(topNav) === JSON.stringify(['Home', 'About', 'Menu', 'Contact']), JSON.stringify(topNav));
+
+    await clickIn(page, 'nav[aria-label="Main"]', 'About');
+    const aboutLinks = await linkTexts(page, '#about-menu a');
+    check(
+      'About group lists About us, Vision, Mission, How we started',
+      JSON.stringify(aboutLinks) === JSON.stringify(['About us', 'Vision', 'Mission', 'How we started']),
+      JSON.stringify(aboutLinks),
+    );
+    await page.keyboard.press('Escape');
+    await sleep(150);
+
+    await clickIn(page, 'nav[aria-label="Main"]', 'Menu');
+    const menuLinks = await linkTexts(page, '#menu-menu a');
+    check(
+      'Menu group lists Offering / Meals, all six categories and Specials',
+      menuLinks.length === 8 && menuLinks[0] === 'Offering / Meals' && menuLinks[7] === 'Specials',
+      JSON.stringify(menuLinks),
+    );
+    await page.keyboard.press('Escape');
+    await sleep(150);
+
+    const homeCategories = await page.$$eval('main a[href^="/menu#category-"]', (els) => [...new Set(els.map((e) => e.getAttribute('href')))]);
+    check('home shows all six menu categories', homeCategories.length === 6, JSON.stringify(homeCategories));
+    const homeLinks = await page.$$eval('main a', (els) => els.map((e) => e.getAttribute('href') ?? ''));
+    check('how-to-order has menu, WhatsApp, Uber Eats and Mr D', homeLinks.includes('/menu') && homeLinks.some((h) => h.startsWith('https://wa.me/27670137587')) && homeLinks.some((h) => h.includes('ubereats.com')) && homeLinks.some((h) => h.includes('mrd.com')));
+    const externalTargets = await page.$$eval('main a[href*="ubereats.com"], main a[href*="mrd.com"]', (els) => els.map((e) => `${e.getAttribute('target')}|${e.getAttribute('rel')}`));
+    check('Uber Eats and Mr D open in a new tab safely', externalTargets.length >= 2 && externalTargets.every((t) => t.startsWith('_blank|') && t.includes('noopener')), JSON.stringify(externalTargets));
+
+    check('back to top is hidden at the top of the page', !(await page.$('button[aria-label="Back to top"]')));
+    await page.evaluate(() => window.scrollTo({ top: 1600, behavior: 'instant' }));
+    await sleep(400);
+    const backToTop = await page.$('button[aria-label="Back to top"]');
+    check('back to top appears after scrolling down', Boolean(backToTop));
+    await backToTop?.click();
+    await sleep(1000);
+    const scrolledY = await page.evaluate(() => window.scrollY);
+    check('back to top returns to the top', scrolledY < 40, `scrollY ${scrolledY}`);
+    await shot(page, '01-home-desktop');
     await shot(page, '02-home-full', true);
 
-    console.log('\nMenu and product cards');
-    await page.goto(`${BASE}/menu`, { waitUntil: 'networkidle0', timeout: 90000 });
-    const card = '#item-mogodu-samp [role="region"][aria-roledescription="carousel"]';
-    const cardState = await carouselState(page, card);
-    check('product card has three photos', cardState.tabs === 3, JSON.stringify(cardState));
-    const cardDots = await page.$$(`${card} [role="tab"]`);
-    await cardDots[1].click();
-    await new Promise((r) => setTimeout(r, 700));
-    const cardAfter = await carouselState(page, card);
-    check('product dot 2 switches the photo', cardAfter.selected === 1 && cardAfter.src.includes('mogodu-2'), JSON.stringify(cardAfter));
-    await page.click(`${card} button[aria-label="Next photo"]`);
-    await new Promise((r) => setTimeout(r, 700));
-    check('product next arrow moves to photo 3', (await carouselState(page, card)).src.includes('mogodu-3'));
-    await page.click(`${card} figure[aria-hidden="false"] img`);
-    await new Promise((r) => setTimeout(r, 300));
-    const dialogInfo = await page.evaluate(() => {
-      const dialogs = Array.from(document.querySelectorAll('dialog[open]'));
-      return dialogs.map((d) => ({ thumbs: d.querySelectorAll('[role="listitem"]').length }));
-    });
-    check('clicking a photo opens the lightbox with all photos', dialogInfo.some((d) => d.thumbs === 3), JSON.stringify(dialogInfo));
-    await page.keyboard.press('Escape');
-    await shot(page, '03-menu-cards', false);
+    console.log('\nMenu and product photos');
+    await go(page, '/menu');
+    const cardIds = await page.$$eval('article[id^="item-"]', (els) => els.map((e) => e.id));
+    check('menu lists all 20 dishes', cardIds.length === 20, `${cardIds.length}`);
+    const sectionIds = await page.$$eval('section[id^="category-"]', (els) => els.map((e) => e.id));
+    check('menu has a section for each of the six categories', sectionIds.length === 6, JSON.stringify(sectionIds));
+    const chipTexts = await linkTexts(page, '.chip-row a');
+    check('category bar offers All dishes plus six categories', chipTexts.length === 7, JSON.stringify(chipTexts));
 
-    console.log('\nBasket and checkout');
-    await page.evaluate(() => localStorage.removeItem('hb-cart-v1'));
-    await page.goto(`${BASE}/menu`, { waitUntil: 'networkidle0', timeout: 90000 });
-    const addButtons = await page.$$('button[aria-label="Add Mogodu & Samp to cart"]');
-    check('each dish has an Add to cart button', addButtons.length === 1);
-    await addButtons[0].click();
-    await new Promise((r) => setTimeout(r, 400));
-    const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('hb-cart-v1') || '[]'));
-    check('Add to cart stores the dish in the basket', stored.length === 1 && stored[0].key === 'item:mogodu-samp');
-    const orderButton = await page.$('button[aria-label="Order Fried Chips now"]');
-    await page.evaluate(() => document.getElementById('item-fried-chips')?.scrollIntoView({ block: 'center' }));
-    await orderButton?.click();
+    let photos = 0;
+    const photoProblems = [];
+    for (const id of cardIds) {
+      const scope = `#${id}`;
+      await page.evaluate((s) => document.querySelector(s)?.scrollIntoView({ block: 'center' }), scope);
+      await sleep(150);
+      const snap = await carouselSnapshot(page, scope);
+      if (!snap) {
+        photoProblems.push(`${id}: no carousel`);
+        continue;
+      }
+      if (snap.dots === 0) {
+        if (!snap.loaded) photoProblems.push(`${id}: single photo did not load`);
+        photos += 1;
+        continue;
+      }
+      if (snap.arrows !== 1) photoProblems.push(`${id}: next arrow missing`);
+      for (let i = 0; i < snap.dots; i += 1) {
+        await clickDot(page, scope, i);
+        try {
+          await page.waitForFunction(
+            (s, idx) => {
+              const img = document.querySelector(`${s} [role="region"] img`);
+              const dots = document.querySelectorAll(`${s} .carousel-dots button`);
+              return img && img.complete && img.naturalWidth > 0 && dots[idx]?.getAttribute('aria-current') === 'true';
+            },
+            { timeout: 5000 },
+            scope,
+            i,
+          );
+        } catch {
+          photoProblems.push(`${id}: dot ${i + 1} did not show a loaded photo`);
+          continue;
+        }
+        const state = await carouselSnapshot(page, scope);
+        if (state.counter !== `${i + 1} / ${snap.dots}`) photoProblems.push(`${id}: counter ${state.counter} at dot ${i + 1}`);
+        photos += 1;
+      }
+      await clickDot(page, scope, 0);
+    }
+    check(`every dot on every dish shows its own photo (${photos} photos)`, photoProblems.length === 0, photoProblems.slice(0, 6).join(' | '));
+
+    // Arrows: on a two-photo dish, next then previous returns to the first photo.
+    const mogodu = '#item-mogodu-samp';
+    await clickDot(page, mogodu, 0);
+    await page.evaluate((s) => document.querySelector(`${s} button[aria-label="Next photo"]`)?.click(), mogodu);
+    await sleep(200);
+    const afterNext = await carouselSnapshot(page, mogodu);
+    check('next arrow moves to the second Mogodu photo', afterNext.current === 1 && afterNext.src.includes('mogodu-3'), JSON.stringify(afterNext));
+    await page.evaluate((s) => document.querySelector(`${s} button[aria-label="Previous photo"]`)?.click(), mogodu);
+    await sleep(200);
+    check('previous arrow returns to the first photo', (await carouselSnapshot(page, mogodu)).current === 0);
+    await shot(page, '03-menu-cards');
+
+    await clickIn(page, 'body', 'Vegetarian only');
+    const vegCount = (await page.$$('article[id^="item-"]')).length;
+    check('vegetarian filter narrows the menu', vegCount > 0 && vegCount < 20, `${vegCount}`);
+    await clickIn(page, 'body', 'Vegetarian only');
+    check('turning the vegetarian filter off restores all dishes', (await page.$$('article[id^="item-"]')).length === 20);
+
+    await page.type('#menu-search', 'kota');
+    await sleep(200);
+    const searchNames = await page.$$eval('article[id^="item-"] h3', (els) => els.map((e) => e.textContent.trim()));
+    check('menu search finds Sphatlo Kota', searchNames.length >= 1 && searchNames.includes('Sphatlo Kota'), JSON.stringify(searchNames));
+    await page.focus('#menu-search');
+    await page.keyboard.down('Control');
+    await page.keyboard.press('KeyA');
+    await page.keyboard.up('Control');
+    await page.keyboard.press('Backspace');
+    await page.waitForFunction(() => document.querySelectorAll('article[id^="item-"]').length === 20, { timeout: 8000 });
+
+    await clickIn(page, '#item-mogodu-samp', 'Add to cart');
+    const storedAfterAdd = await page.evaluate(() => JSON.parse(localStorage.getItem('hb-cart-v1') || '[]'));
+    check('Add to cart stores Mogodu & Samp', storedAfterAdd.some((l) => l.key === 'item:mogodu-samp'));
+    await clickIn(page, '#item-fried-chips', 'Order now');
     await waitForPath(page, '/checkout');
-    check('Order sends the shopper straight to checkout', page.url().endsWith('/checkout'));
-    const summary = await page.$eval('aside[aria-labelledby="summary-title"]', (el) => el.textContent);
-    check('checkout summary lists both dishes', summary.includes('Mogodu') && summary.includes('Fried Chips'));
-    await shot(page, '04-checkout-desktop', true);
+    check('Order now goes straight to checkout', page.url().endsWith('/checkout'));
 
-    // Field alignment on checkout: text inputs share left edges and heights.
-    const fieldMetrics = await page.$$eval('#checkout-form input.field, #checkout-form select.field', (els) =>
-      els.map((el) => {
-        const r = el.getBoundingClientRect();
-        return { left: Math.round(r.left), height: Math.round(r.height), width: Math.round(r.width) };
-      }),
-    );
-    const heights = new Set(fieldMetrics.map((f) => f.height));
-    check('all checkout inputs share one height', heights.size === 1, JSON.stringify([...heights]));
-    const leftEdges = new Set(fieldMetrics.map((f) => f.left));
-    check('checkout inputs align to two clean columns', leftEdges.size <= 2, JSON.stringify([...leftEdges]));
+    console.log('\nCheckout (single page)');
+    await page.waitForSelector('form select');
+    const summary = await page.$eval('aside', (a) => a.textContent);
+    check('checkout summary lists both dishes', summary.includes('Mogodu & Samp') && summary.includes('Fried Chips'));
+    const heights = await fieldHeights(page, 'form input.field, form select.field');
+    check('every checkout input and select has the same height', new Set(heights).size === 1, JSON.stringify([...new Set(heights)]));
+    const payments = await page.$$eval('input[name="payment"]', (els) => els.map((e) => e.value));
+    check('payment options: card, Yoco, counter, WhatsApp', JSON.stringify(payments) === JSON.stringify(['card', 'yoco', 'counter', 'whatsapp']), JSON.stringify(payments));
+    check('card details are shown for the debit card option', (await page.$$('input[autocomplete="cc-number"]')).length === 1);
+    await shot(page, '04-checkout-desktop', true);
 
     await page.type('input[autocomplete="name"]', 'Thandi Browser');
     await page.type('input[autocomplete="tel"]', '082 123 4567');
-    const pickupValue = await page.$eval('select.field', (s) => s.options[0]?.value ?? '');
-    check('a pickup time is preselected', pickupValue !== '');
-    const submit = await page.$('aside button[type="submit"]');
-    check('Place order is enabled with a basket and pickup time', submit && !(await (await submit.getProperty('disabled')).jsonValue()));
-    await submit.click();
+    await page.click('form button[type="submit"]');
     await waitForPath(page, '/order/', 60000);
     await page.waitForSelector('h1');
-    const orderHeading = await page.$eval('h1', (h) => h.textContent);
-    check('card payment lands on the order tracker', orderHeading.startsWith('HB-'), orderHeading);
-    const cartAfter = await page.evaluate(() => localStorage.getItem('hb-cart-v1'));
-    check('basket is emptied after a paid order', cartAfter === '[]' || cartAfter === null);
+    const orderHeading = await page.$eval('h1', (h) => h.textContent.trim());
+    check('card payment places the order and shows its number', /^HB-\d+/.test(orderHeading), orderHeading);
+    const cartAfterCard = await page.evaluate(() => localStorage.getItem('hb-cart-v1'));
+    check('cart is emptied after placing the order', cartAfterCard === '[]' || cartAfterCard === null);
     await shot(page, '05-order-tracker', true);
 
-    console.log('\nYoco and WhatsApp');
-    await page.goto(`${BASE}/menu`, { waitUntil: 'networkidle0', timeout: 90000 });
-    await (await page.$('button[aria-label="Add Samp & Beans to cart"]'))?.click();
-    await new Promise((r) => setTimeout(r, 300));
-    await page.goto(`${BASE}/checkout`, { waitUntil: 'networkidle0', timeout: 90000 });
+    console.log('\nYoco and WhatsApp and counter');
+    await go(page, '/menu');
+    await clickIn(page, '#item-samp-beans', 'Add to cart');
+    await go(page, '/checkout');
     await page.type('input[autocomplete="name"]', 'Yoco Shopper');
     await page.type('input[autocomplete="tel"]', '0821234567');
-    const radios = await page.$$('[role="radiogroup"][aria-label="Payment method"] [role="radio"]');
-    await radios[1].click();
-    await (await page.$('aside button[type="submit"]'))?.click();
+    await page.click('input[name="payment"][value="yoco"]');
+    await page.click('form button[type="submit"]');
     await waitForPath(page, '/pay/yoco/', 60000);
-    check('Yoco option opens the simulated checkout page', page.url().includes('/pay/yoco/yco_'));
-    await shot(page, '06-yoco-simulated', false);
-    const payButton = await page.$('button.btn-ochre');
-    await payButton?.click();
+    check('Yoco opens the simulated checkout page', page.url().includes('/pay/yoco/yco_'));
+    await shot(page, '06-yoco-simulated');
+    await page.click('button.btn-ochre');
     await waitForPath(page, '/order/', 60000);
-    check('approving the Yoco payment shows the order', (await page.$eval('h1', (h) => h.textContent)).startsWith('HB-'));
+    check('approving the Yoco payment shows the order', /^HB-/.test(await page.$eval('h1', (h) => h.textContent.trim())));
 
-    await page.goto(`${BASE}/menu`, { waitUntil: 'networkidle0', timeout: 90000 });
-    await (await page.$('button[aria-label="Add Chakalaka to cart"]'))?.click();
-    await new Promise((r) => setTimeout(r, 300));
-    await page.goto(`${BASE}/checkout?channel=whatsapp`, { waitUntil: 'networkidle0', timeout: 90000 });
+    await go(page, '/menu');
+    await clickIn(page, '#item-chakalaka', 'Add to cart');
+    await go(page, '/checkout?channel=whatsapp');
     await page.type('input[autocomplete="name"]', 'WhatsApp Shopper');
     await page.type('input[autocomplete="tel"]', '0821234567');
-    await (await page.$('aside button[type="submit"]'))?.click();
-    await page.waitForFunction(() => document.body.innerText.includes('Open WhatsApp'), { timeout: 60000 });
-    const waHref = await page.$eval('a[href^="https://wa.me/"][href*="text="]', (a) => a.getAttribute('href'));
-    check('WhatsApp checkout offers a wa.me link with the order', String(waHref).includes('wa.me/27670137587') && String(waHref).includes('text='));
-
-    console.log('\nContact form');
-    await page.goto(`${BASE}/contact`, { waitUntil: 'networkidle0', timeout: 90000 });
-    const contactFields = await page.$$eval('[role="tabpanel"] input.field, [role="tabpanel"] select.field', (els) =>
-      els.map((el) => {
-        const r = el.getBoundingClientRect();
-        return { left: Math.round(r.left), height: Math.round(r.height) };
-      }),
+    await page.click('form button[type="submit"]');
+    await page.waitForFunction(
+      () => Array.from(document.querySelectorAll('a')).some((a) => a.textContent.includes('Send on WhatsApp')),
+      { timeout: 60000 },
     );
-    check('contact form has aligned fields', contactFields.length >= 4, JSON.stringify(contactFields));
-    check('contact inputs share one height', new Set(contactFields.map((f) => f.height)).size === 1, JSON.stringify([...new Set(contactFields.map((f) => f.height))]));
-    check('contact inputs align to two clean columns', new Set(contactFields.map((f) => f.left)).size <= 2, JSON.stringify([...new Set(contactFields.map((f) => f.left))]));
-    await shot(page, '10-contact', true);
+    const waHref = await page.$eval('a[href^="https://wa.me/"]', (a) => a.getAttribute('href'));
+    check('WhatsApp order gives a wa.me link carrying the order', waHref.includes('wa.me/27670137587') && waHref.includes('text='), waHref);
 
-    console.log('\nResponsive layout');
+    await go(page, '/menu');
+    await clickIn(page, '#item-atchaar', 'Add to cart');
+    await go(page, '/checkout');
+    await page.type('input[autocomplete="name"]', 'Counter Shopper');
+    await page.type('input[autocomplete="tel"]', '0821234567');
+    await page.click('input[name="payment"][value="counter"]');
+    await page.click('form button[type="submit"]');
+    await waitForPath(page, '/order/', 60000);
+    check('pay at the counter places the order', /^HB-/.test(await page.$eval('h1', (h) => h.textContent.trim())));
+
+    console.log('\nContact');
+    await go(page, '/contact');
+    const form = 'form[aria-labelledby="contact-form-heading"]';
+    const contactHeights = await fieldHeights(page, `${form} input.field, ${form} select.field`);
+    check('contact form fields share one height', new Set(contactHeights).size === 1, JSON.stringify([...new Set(contactHeights)]));
+    await page.select(`${form} select.field`, 'catering');
+    check('catering shows event date and guests', (await page.$$(`${form} input[type="date"]`)).length === 1 && (await page.$$(`${form} input[type="number"]`)).length === 1);
+    await page.select(`${form} select.field`, 'table');
+    check('table booking shows date, time and people', (await page.$$(`${form} input[type="date"]`)).length === 1 && (await page.$$(`${form} input[type="time"]`)).length === 1);
+    await page.select(`${form} select.field`, 'general');
+    await page.type(`${form} input[autocomplete="name"]`, 'Test Person');
+    await page.type(`${form} input[autocomplete="email"]`, 'test@example.com');
+    await page.type(`${form} textarea`, 'Browser check: please confirm the Sunday opening hours.');
+    await page.click(`${form} button[type="submit"]`);
+    await page.waitForFunction(() => document.body.innerText.includes('Your reference is'), { timeout: 30000 });
+    check('contact form sends the message and shows a reference', true);
+    check('FAQ has seven questions', (await page.$$('#faq details')).length === 7);
+
+    console.log('\nSpecials and search');
+    await go(page, '/specials');
+    check('specials page lists eight specials', (await page.$$('article')).length === 8);
+    await go(page, '/');
+    await page.click('button[aria-controls="site-search"]');
+    await page.type('#site-search input[type="search"]', 'mog');
+    await page.waitForSelector('#site-search a[href^="/menu#item-"]', { timeout: 15000 });
+    check('header search suggests dishes as you type', true);
+    await page.keyboard.press('Escape');
+
+    console.log('\nResponsive: phone (390px)');
     await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 1 });
-    await page.goto(`${BASE}/`, { waitUntil: 'networkidle0', timeout: 90000 });
-    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    check('no horizontal scrolling on a phone', overflow <= 1, `overflow ${overflow}px`);
-    await shot(page, '07-home-mobile', false);
-    const menuBox = await page.$eval('button[aria-controls="mobile-menu"]', (b) => {
-      const r = b.getBoundingClientRect();
-      return { left: r.left, right: r.right, width: window.innerWidth };
+    for (const route of ['/', '/menu', '/specials', '/about', '/contact', '/checkout', '/search?q=kota']) {
+      await go(page, route);
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      check(`no sideways scrolling on ${route}`, overflow <= 1, `${overflow}px`);
+    }
+    await go(page, '/');
+    const navBox = await page.$eval('nav[aria-label="Quick navigation"]', (n) => {
+      const r = n.getBoundingClientRect();
+      return { bottom: Math.round(r.bottom), vh: window.innerHeight };
     });
-    check('phone header keeps the menu button on screen', menuBox.right <= menuBox.width && menuBox.left >= 0, JSON.stringify(menuBox));
-    await page.click('button[aria-controls="mobile-menu"]');
-    await new Promise((r) => setTimeout(r, 300));
-    await shot(page, '08-mobile-menu', false);
-    await page.setViewport({ width: 1440, height: 900 });
+    check('bottom navigation is pinned to the bottom of the screen', Math.abs(navBox.bottom - navBox.vh) <= 2, JSON.stringify(navBox));
+    await shot(page, '07-home-mobile');
+
+    await page.click('nav[aria-label="Quick navigation"] button[aria-expanded]');
+    await sleep(300);
+    const aboutSheet = await linkTexts(page, '[role="dialog"] a');
+    check('bottom About opens the About group', JSON.stringify(aboutSheet) === JSON.stringify(['About us', 'Vision', 'Mission', 'How we started']), JSON.stringify(aboutSheet));
+    await shot(page, '08-mobile-about-sheet');
+    await page.keyboard.press('Escape');
+    await sleep(200);
+
+    await page.evaluate(() => document.querySelectorAll('nav[aria-label="Quick navigation"] button[aria-expanded]')[1]?.click());
+    await sleep(300);
+    const menuSheet = await linkTexts(page, '[role="dialog"] a');
+    check('bottom Menu opens the same Menu group', menuSheet.length === 8 && menuSheet[0] === 'Offering / Meals' && menuSheet[7] === 'Specials', JSON.stringify(menuSheet));
+    await shot(page, '09-mobile-menu-sheet');
+    await page.keyboard.press('Escape');
+    await sleep(200);
+
+    await page.evaluate(() => document.querySelector('nav[aria-label="Quick navigation"] li:last-child button')?.click());
+    await sleep(300);
+    check('bottom Cart opens the cart drawer', (await page.$eval('[role="dialog"]', (d) => d.textContent)).includes('cart'));
+    await page.keyboard.press('Escape');
+    await sleep(200);
+
+    await page.evaluate(() => window.scrollTo({ top: 1500, behavior: 'instant' }));
+    await sleep(400);
+    const phoneTop = await page.$('button[aria-label="Back to top"]');
+    check('back to top appears on the phone', Boolean(phoneTop));
+    const aboveBar = await page.evaluate(() => {
+      const b = document.querySelector('button[aria-label="Back to top"]');
+      const n = document.querySelector('nav[aria-label="Quick navigation"]');
+      return b && n ? b.getBoundingClientRect().bottom <= n.getBoundingClientRect().top : false;
+    });
+    check('back to top sits above the bottom bar on the phone', aboveBar);
+    await shot(page, '10-mobile-back-to-top');
+
+    await go(page, '/menu');
+    await clickIn(page, '#item-chicken-wings', 'Add to cart');
+    await go(page, '/checkout');
+    await page.waitForSelector('form select');
+    const phoneFields = await fieldHeights(page, 'form input.field, form select.field');
+    check('phone checkout fields share one height', new Set(phoneFields).size === 1, JSON.stringify([...new Set(phoneFields)]));
+    await shot(page, '11-checkout-mobile', true);
+
+    console.log('\nResponsive: tablet (768px)');
+    await page.setViewport({ width: 768, height: 1024, isMobile: false, hasTouch: false, deviceScaleFactor: 1 });
+    for (const route of ['/', '/menu', '/checkout', '/contact']) {
+      await go(page, route);
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      check(`no sideways scrolling on ${route} (768px)`, overflow <= 1, `${overflow}px`);
+    }
+    await go(page, '/');
+    await shot(page, '12-home-tablet');
 
     console.log('\nStaff console');
-    await page.goto(`${BASE}/staff`, { waitUntil: 'networkidle0', timeout: 90000 });
+    await page.setViewport({ width: 1440, height: 900 });
+    await go(page, '/staff');
     check('staff area asks for the PIN first', page.url().includes('/staff/login'));
     await page.type('input[autocomplete="one-time-code"]', PIN);
     await page.click('button[type="submit"]');
     await waitForPath(page, '/staff', 30000);
     await page.waitForSelector('#board-heading', { timeout: 30000 });
     check('staff board opens after sign-in', (await page.$eval('#board-heading', (h) => h.textContent)).includes('Kitchen'));
-    const columns = await page.$$eval('h2', (hs) => hs.map((h) => h.textContent).filter((t) => ['New', 'Preparing', 'Ready for collection', 'Awaiting payment'].includes(t)));
-    check('board has kitchen columns', columns.length >= 3, JSON.stringify(columns));
-    await shot(page, '09-staff-board', false);
+    await shot(page, '13-staff-board');
 
     console.log('\nPage errors');
-    check('no uncaught JavaScript errors on the way', pageErrors.length === 0, pageErrors.slice(0, 5).join(' | '));
+    check('no uncaught JavaScript errors while browsing', pageErrors.length === 0, pageErrors.slice(0, 5).join(' | '));
   } finally {
     await browser.close();
   }

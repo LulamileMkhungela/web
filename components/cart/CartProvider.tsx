@@ -56,7 +56,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       : [...current, { key: line.key, name: line.name, priceCents: line.priceCents, image: line.image, qty }];
     setLines(next);
     writeCart(next);
-    setNotice({ id: Date.now(), text: `${line.name} added to your basket` });
+    setNotice({ id: Date.now(), text: `${line.name} added to your cart` });
   }, []);
 
   const setQty = useCallback((key: string, qty: number) => {
@@ -108,7 +108,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
           key={notice.id}
           role="status"
           aria-live="polite"
-          className="no-print fixed bottom-6 left-1/2 z-[70] -translate-x-1/2 rounded-full bg-navy px-5 py-3 text-sm font-semibold text-cream shadow-lift"
+          className="no-print fixed bottom-24 left-1/2 z-[70] -translate-x-1/2 lg:bottom-6 rounded-full bg-navy px-5 py-3 text-sm font-semibold text-cream shadow-lift"
         >
           {notice.text}
         </div>

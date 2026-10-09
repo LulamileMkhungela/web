@@ -1,7 +1,6 @@
-// Starting menu, specials and settings. Every dish and category comes from the
-// heritagebites.co.za menu, gallery and media library. PRICES, SPECIAL PRICES AND
-// OPENING HOURS ARE INDICATIVE PLACEHOLDERS: the owner must confirm them in the
-// staff console (Settings) before launch.
+// Starting menu, specials and settings. Dishes and categories follow the heritagebites.co.za
+// menu. PRICES, SPECIAL PRICES AND OPENING HOURS ARE INDICATIVE PLACEHOLDERS: the owner must
+// confirm them in the staff console (Settings) before launch.
 import { BRAND, DEFAULT_STORE_LINKS } from './config';
 
 export const SEED_CATEGORIES = [
@@ -78,7 +77,7 @@ export const SEED_ITEMS: SeedItem[] = [
     story:
       'Mogodu is beef tripe, a traditional South African dish with a special place in township food culture. It is the heart of the Mogodu Monday tradition. Our version is slow-cooked until tender and served with creamy samp.',
     priceCents: 8500,
-    images: [img('mogodu-1'), img('mogodu-2'), img('mogodu-3')],
+    images: [img('mogodu-1'), img('mogodu-3')],
     tags: ['Traditional', 'Bestseller'],
     prepMinutes: 15,
     featured: true,
@@ -93,7 +92,7 @@ export const SEED_ITEMS: SeedItem[] = [
     story:
       'Tshotlo is pounded beef, a traditional Setswana meal. Pap, the maize porridge that sits beside so many South African plates, completes it.',
     priceCents: 8500,
-    images: [img('tshotlo-1')],
+    images: [img('tshotlo-1'), img('tshotlo-2')],
     tags: ['Traditional', 'Setswana'],
     prepMinutes: 15,
     sort: 2,
@@ -150,7 +149,7 @@ export const SEED_ITEMS: SeedItem[] = [
     description: 'Our mogodu and samp served with slow-braised cabbage.',
     story: 'A combination plate for a fuller meal: mogodu and samp with cabbage braised until soft.',
     priceCents: 11000,
-    images: [img('mogodu-2'), img('pap-cabbage-2')],
+    images: [img('mogodu-2')],
     tags: ['Combo', 'Hearty'],
     prepMinutes: 15,
     sort: 2,
@@ -163,7 +162,7 @@ export const SEED_ITEMS: SeedItem[] = [
     description: 'Soft pap, braised cabbage and tshotlo pounded beef.',
     story: 'Pap, cabbage and tshotlo: a balanced plate of soft maize porridge, braised cabbage and pounded beef.',
     priceCents: 11000,
-    images: [img('pap-cabbage-1'), img('tshotlo-1')],
+    images: [img('pap-tshotlo-1'), img('pap-tshotlo-2')],
     tags: ['Combo', 'Hearty'],
     prepMinutes: 15,
     sort: 3,
@@ -187,10 +186,10 @@ export const SEED_ITEMS: SeedItem[] = [
     categoryId: 'popular',
     name: 'Chicken Hardbody',
     subtitle: 'Bold, grilled chicken',
-    description: 'Chicken legs seasoned and grilled over the braai, bold and satisfying.',
+    description: 'Chicken seasoned and grilled over the braai, bold and satisfying.',
     story: 'Chicken Hardbody is one of the favourites on our Popular Favourites menu.',
     priceCents: 8500,
-    images: [img('braai-legs-1'), img('braai-ribs-2')],
+    images: [img('braai-legs-1'), img('chicken-hardbody-2')],
     tags: ['Chicken'],
     prepMinutes: 15,
     sort: 2,
@@ -218,7 +217,7 @@ export const SEED_ITEMS: SeedItem[] = [
     description: 'A South African Russian sausage served with a generous portion of chips.',
     story: 'Russians are a South African cooked sausage, usually served with chips.',
     priceCents: 4500,
-    images: [img('russian-1')],
+    images: [img('russian-1'), img('russian-2')],
     tags: ['Fast food'],
     prepMinutes: 8,
     sort: 2,
@@ -277,7 +276,7 @@ export const SEED_ITEMS: SeedItem[] = [
     description: 'Soft, freshly cooked pap.',
     story: 'Pap is maize porridge, the everyday staple of South African tables.',
     priceCents: 1500,
-    images: [img('pap-1')],
+    images: [img('pap-1'), img('pap-2')],
     tags: ['Side', 'Vegetarian'],
     vegetarian: true,
     prepMinutes: 5,
@@ -306,7 +305,7 @@ export const SEED_ITEMS: SeedItem[] = [
     description: 'Tangy, spiced pickled vegetables.',
     story: 'Atchaar brings a tangy kick to traditional plates.',
     priceCents: 2000,
-    images: [img('atchaar-1')],
+    images: [img('atchaar-1'), img('atchaar-2')],
     tags: ['Side', 'Vegetarian'],
     spice: 1,
     vegetarian: true,
@@ -321,7 +320,7 @@ export const SEED_ITEMS: SeedItem[] = [
     description: 'Cabbage slow-braised until soft.',
     story: 'Braised cabbage is the hearty side in our combination plates.',
     priceCents: 2500,
-    images: [img('pap-cabbage-2'), img('pap-cabbage-1')],
+    images: [img('pap-cabbage-1'), img('pap-cabbage-2')],
     tags: ['Side', 'Vegetarian'],
     vegetarian: true,
     prepMinutes: 8,
@@ -335,7 +334,7 @@ export const SEED_ITEMS: SeedItem[] = [
     description: 'Soft steamed dumplings, perfect for soaking up the gravy.',
     story: 'Steamed dumplings are the soft, bread-like side that suits our stews.',
     priceCents: 2500,
-    images: [img('dumplings-1'), img('dumplings-2'), img('dumplings-3')],
+    images: [img('dumplings-1'), img('dumplings-2')],
     tags: ['Side', 'Vegetarian'],
     vegetarian: true,
     prepMinutes: 10,
@@ -345,12 +344,12 @@ export const SEED_ITEMS: SeedItem[] = [
     id: 'house-salsa',
     categoryId: 'sides',
     name: 'House Salsa',
-    subtitle: 'Fresh tomato and onion',
-    description: 'A fresh tomato and onion salsa to pair with your favourites.',
-    story: 'Our house salsa is a fresh, sharp accompaniment to the braai favourites.',
+    subtitle: 'Tomato and onion relish',
+    description: 'A tomato and onion relish to pair with your braai favourites.',
+    story: 'Our house salsa is a tomato and onion relish: a simple, bright accompaniment to the braai favourites.',
     priceCents: 1500,
     images: [img('salsa-1'), img('salsa-2')],
-    tags: ['Side', 'Fresh', 'Vegetarian'],
+    tags: ['Side', 'Vegetarian'],
     vegetarian: true,
     prepMinutes: 3,
     sort: 6,

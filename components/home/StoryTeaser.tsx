@@ -1,58 +1,28 @@
 import Link from 'next/link';
-import { CalendarDays, MapPin, Utensils } from 'lucide-react';
-import { SectionHeading } from '@/components/ui/SectionHeading';
+import { STORY_TEASER } from '@/lib/content';
 
 export function StoryTeaser() {
   return (
-    <section aria-labelledby="story-heading" className="bg-white">
-      <div className="mx-auto grid w-full max-w-[1240px] items-center gap-14 px-5 py-24 sm:px-8 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="relative mx-auto w-full max-w-[520px]">
-          <div className="arch aspect-[4/5] w-full shadow-lift">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/images/menu/wide-1.webp"
-              alt="A spread of South African dishes on a table"
-              loading="lazy"
-              className="h-full w-full object-cover"
-            />
-          </div>
-          <div className="card absolute -bottom-6 -right-2 max-w-[250px] p-5 sm:-right-6">
-            <p className="font-display text-4xl font-bold text-navy">Est. 2025</p>
-            <p className="mt-1 text-sm text-body">Traditional African food, takeaway and delivery in Pretoria Central.</p>
-          </div>
+    <section className="bg-cream-deep" aria-labelledby="story-heading">
+      <div className="container-hb grid items-center gap-10 py-16 md:py-24 lg:grid-cols-2 lg:gap-16">
+        <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] bg-cream shadow-soft">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/menu/kota-3.webp"
+            alt="A guest enjoying a kota at Heritage Bites"
+            className="absolute inset-0 h-full w-full object-cover"
+            loading="lazy"
+          />
         </div>
-        <div className="flex flex-col gap-6">
-          <SectionHeading id="story-heading" kicker="Our story" script="Every bite tells a story" title="Roots in family kitchens, served in Pretoria Central">
-            <p>
-              Heritage Bites is a culturally inspired African restaurant and takeaway. We serve authentic South African
-              traditional meals, contemporary favourites and fast food, prepared with rich flavour, wholesome ingredients
-              and true heritage.
-            </p>
-          </SectionHeading>
-          <ul className="grid gap-4 sm:grid-cols-3">
-            {[
-              { icon: Utensils, text: 'Recipes from family kitchens' },
-              { icon: MapPin, text: '323 Sisulu Street, Pretoria Central' },
-              { icon: CalendarDays, text: 'Mogodu Monday and weekly specials' },
-            ].map((item) => {
-              const Icon = item.icon;
-              return (
-                <li key={item.text} className="flex flex-col gap-3 rounded-2xl border border-navy/10 bg-cream p-5">
-                  <Icon className="h-5 w-5 text-ochre-deep" aria-hidden="true" />
-                  <span className="text-sm font-semibold leading-snug text-navy">{item.text}</span>
-                </li>
-              );
-            })}
-          </ul>
-          <div className="flex flex-wrap gap-3 pt-2">
-            <Link href="/about" className="btn btn-navy">
+        <div className="max-w-xl">
+          <p className="kicker">Our story</p>
+          <h2 id="story-heading" className="mt-3 text-[clamp(2rem,4vw,3rem)] font-bold">
+            Rooted in family kitchens
+          </h2>
+          <p className="mt-5 text-lg leading-relaxed">{STORY_TEASER}</p>
+          <div className="mt-8">
+            <Link href="/about" className="btn btn-primary">
               Read our story
-            </Link>
-            <Link href="/about#vision" className="btn btn-outline">
-              Our vision
-            </Link>
-            <Link href="/about#mission" className="btn btn-outline">
-              Our mission
             </Link>
           </div>
         </div>
