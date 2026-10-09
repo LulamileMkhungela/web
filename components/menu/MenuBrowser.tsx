@@ -92,7 +92,8 @@ export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
 
   return (
     <>
-      <div id="menu" className="container-hb pt-10 md:pt-12">
+      <div id="menu" className="container-hb relative isolate pt-10 md:pt-12">
+        <div aria-hidden="true" className="kasi-wash" />
         <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
           <div className="w-full md:max-w-md">
             <label htmlFor="menu-search" className="label">
@@ -125,7 +126,7 @@ export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
         </div>
       </div>
 
-      <nav aria-label="Menu categories" className="sticky top-[4.5rem] z-30 mt-8 border-b border-line bg-cream/95 backdrop-blur">
+      <nav aria-label="Menu categories" className="sticky top-[4.5rem] z-30 mt-8 bg-cream/95 backdrop-blur">
         <div className="container-hb">
           <div ref={tabRow} className="chip-row py-3 lg:flex-wrap lg:overflow-visible">
             <a
@@ -151,6 +152,7 @@ export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
             ))}
           </div>
         </div>
+        <div aria-hidden="true" className="kasi-strip" />
       </nav>
 
       {visible.map((category) =>
@@ -161,9 +163,11 @@ export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
             aria-labelledby={`heading-${category.id}`}
             className="container-hb py-12 md:py-16"
           >
-            <header className="flex flex-col gap-2 pb-5 sm:flex-row sm:items-end sm:justify-between">
+            <header className="relative isolate flex flex-col gap-2 pb-5 sm:flex-row sm:items-end sm:justify-between">
+              <div aria-hidden="true" className="kasi-wash" />
               <div>
                 <h2 id={`heading-${category.id}`} className="text-[clamp(1.9rem,3.4vw,2.6rem)] font-bold">
+                  <span aria-hidden="true" className="kasi-diamond" />
                   {category.name}
                 </h2>
                 <p className="mt-1">{category.tagline}</p>

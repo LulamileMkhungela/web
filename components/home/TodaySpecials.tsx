@@ -63,6 +63,7 @@ export function SpecialCard({ special }: { special: SpecialCardData }) {
           {special.dayLabel}
         </span>
       </div>
+      <div aria-hidden="true" className="kasi-strip" />
       <div className="flex flex-1 flex-col gap-3 p-5 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <h3 className="text-xl font-bold leading-snug">{special.title}</h3>

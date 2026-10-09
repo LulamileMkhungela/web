@@ -17,6 +17,7 @@ export default function AboutPage() {
   return (
     <>
       <section className="grain relative overflow-hidden bg-navy text-cream">
+        <div aria-hidden="true" className="kasi-panel" />
         <div className="container-hb grid items-center gap-14 pb-28 pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-16 lg:pb-32 lg:pt-20">
           <div className="max-w-2xl">
             <p className="kicker kicker-light">About us</p>

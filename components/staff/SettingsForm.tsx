@@ -163,7 +163,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           <div className="flex flex-col gap-5">
             <h2 className="font-display text-2xl font-bold text-navy">Social media</h2>
             <p className="text-sm text-muted">
-              Paste the full link to each page. An icon appears on the website only when its link is filled in.
+              Paste the full link to each page. Until a link is filled in, its icon on the website opens a search for Heritage Bites Pretoria on that platform.
             </p>
             <Field id={`${ids}-facebook`} label="Facebook page link" hint="For example https://www.facebook.com/yourpage">
               <input id={`${ids}-facebook`} className="field" placeholder="https://" value={social.facebook} onChange={(e) => setSocial({ ...social, facebook: e.target.value })} />

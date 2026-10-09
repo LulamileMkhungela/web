@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Mail, MapPin, MessageCircle, Phone } from 'lucide-react';
-import { SocialIcons, hasSocialLinks } from '@/components/site/SocialIcons';
+import { SocialIcons } from '@/components/site/SocialIcons';
 import { Logo } from '@/components/ui/Logo';
 import { BRAND } from '@/lib/config';
 import { FOOTER_ABOUT_LINKS, FOOTER_HELP_LINKS, FOOTER_MENU_LINKS, type NavLink } from '@/lib/nav';
@@ -90,12 +90,10 @@ export function SiteFooter({
                 {contact.email}
               </a>
             </li>
-            {hasSocialLinks(social) ? (
-              <li className="flex flex-col gap-3 pt-2">
-                <p className="text-cream/80">Follow us</p>
-                <SocialIcons social={social} tone="light" />
-              </li>
-            ) : null}
+            <li className="flex flex-col gap-3 pt-2">
+              <p className="text-cream/80">Follow us</p>
+              <SocialIcons social={social} tone="light" />
+            </li>
           </ul>
         </nav>
       </div>

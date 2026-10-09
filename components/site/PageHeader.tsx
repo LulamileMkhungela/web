@@ -1,23 +1,23 @@
 import type { ReactNode } from 'react';
 
-/** Navy title band used at the top of every inner page, so headings line up the same way everywhere. */
+/**
+ * Navy title band for every page in the top navigation and the legal pages. All of them carry the same
+ * heritage artwork: a diamond lattice on the right and the ochre zigzag along the bottom edge.
+ */
 export function PageHeader({
   kicker,
   script,
   title,
   children,
-  motif,
 }: {
   kicker: string;
   script?: string;
   title: string;
   children?: ReactNode;
-  /** Optional heritage artwork on the right of the band. */
-  motif?: 'kasi';
 }) {
   return (
     <section className="grain relative overflow-hidden bg-navy text-cream">
-      {motif === 'kasi' ? <div aria-hidden="true" className="kasi-panel" /> : null}
+      <div aria-hidden="true" className="kasi-panel" />
       <div className="container-hb pb-16 pt-12 md:pb-20 md:pt-16">
         <p className="kicker kicker-light">{kicker}</p>
         {script ? <p className="eyebrow eyebrow-light mt-2">{script}</p> : null}

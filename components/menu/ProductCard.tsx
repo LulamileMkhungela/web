@@ -12,7 +12,8 @@ export function ProductCard({ item, eager = false }: { item: MenuItem; eager?: b
     image: item.images[0] ?? '',
   };
   return (
-    <article id={`item-${item.id}`} className="card flex h-full flex-col overflow-hidden">
+    <article id={`item-${item.id}`} className="card relative isolate flex h-full flex-col overflow-hidden">
+      <div aria-hidden="true" className="kasi-wash kasi-wash-corner" />
       <ImageCarousel images={item.images} alt={item.name} priority={eager} />
       <div aria-hidden="true" className="kasi-strip" />
       <div className="flex flex-1 flex-col gap-3 p-5 sm:p-6">

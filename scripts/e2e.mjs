@@ -245,10 +245,10 @@ async function main() {
   check('a full social link is saved', goodSocial.status === 200 && goodSocial.data?.settings?.social?.facebook.includes('heritagebites-test'));
   const homeWithSocial = await fetch(`${BASE}/`).then((r) => r.text());
   check('footer shows the Facebook and Instagram icons once their links are saved', homeWithSocial.includes('href="https://www.facebook.com/heritagebites-test"') && homeWithSocial.includes('href="https://www.instagram.com/heritagebites-test"'));
-  check('no TikTok icon while its link is blank', !homeWithSocial.includes('tiktok.com/'));
+  check('the TikTok icon opens a TikTok search while its link is blank', homeWithSocial.includes('href="https://www.tiktok.com/search?q=Heritage%20Bites%20Pretoria"'));
   await call('/api/staff/settings', { method: 'PUT', cookie, body: { social: { facebook: '', instagram: '', tiktok: '' } } });
   const homeWithout = await fetch(`${BASE}/`).then((r) => r.text());
-  check('icons disappear again once the links are cleared', !homeWithout.includes('heritagebites-test'));
+  check('icons go back to the searches once the links are cleared', !homeWithout.includes('heritagebites-test') && homeWithout.includes('href="https://www.facebook.com/search/top/?q=Heritage%20Bites%20Pretoria"'));
 
   console.log('\nEnquiries');
   const contact = await call('/api/messages', { method: 'POST', body: { type: 'contact', name: 'Test Visitor', phone: '0821234567', message: 'Do you have chakalaka today?' } });

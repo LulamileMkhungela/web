@@ -226,12 +226,13 @@ async function main() {
 
     const footerGroups = await page.$$eval('footer h2', (els) => els.map((e) => e.textContent.trim()));
     check('footer groups are Menu, About and Visit & contact', JSON.stringify(footerGroups) === JSON.stringify(['Menu', 'About', 'Visit & contact']), JSON.stringify(footerGroups));
-    const footerLinkCount = await page.$$eval('footer nav a', (els) => els.length);
+    const footerLinkCount = await page.$$eval('footer nav a:not([href*="/search"])', (els) => els.length);
     check('footer links are grouped and reduced to 11', footerLinkCount === 11, `${footerLinkCount} links`);
     const footerIconCount = await page.$$eval('footer nav li svg', (els) => els.length);
-    check('footer visit and contact lines carry icons', footerIconCount === 4, `${footerIconCount} icons`);
+    check('footer carries four contact icons and the Facebook, Instagram and TikTok icons', footerIconCount === 7, `${footerIconCount} icons`);
     check('footer edge is the beaded band', Boolean(await page.$('footer .band-beads')));
-    check('no social icons until a Facebook, Instagram or TikTok link is saved', (await page.$$('footer a[href*="facebook.com"], footer a[href*="instagram.com"], footer a[href*="tiktok.com"]')).length === 0);
+    const socialLinks = await page.$$eval('footer a[href*="/search"]', (els) => els.map((e) => e.href));
+    check('footer social icons link to a search until a page is saved', socialLinks.length === 3 && socialLinks.some((h) => h.includes('facebook.com')) && socialLinks.some((h) => h.includes('instagram.com')) && socialLinks.some((h) => h.includes('tiktok.com')), JSON.stringify(socialLinks));
 
     console.log('\nMenu and product photos');
     await go(page, '/menu');
@@ -527,6 +528,30 @@ async function main() {
     }
     await go(page, '/');
     await shot(page, '12-home-tablet');
+
+    console.log('\nHeritage vectors and layout on every page');
+    const publicRoutes = ['/', '/about', '/menu', '/specials', '/contact', '/checkout', '/search', '/privacy', '/terms'];
+    await page.setViewport({ width: 1440, height: 900 });
+    for (const route of publicRoutes) {
+      await go(page, route);
+      const hero = await page.evaluate(() => {
+        const panel = document.querySelector('.kasi-panel');
+        const section = panel?.closest('section');
+        return { panel: Boolean(panel), zigzag: Boolean(section?.querySelector('.band-zigzag')) };
+      });
+      check(`${route} hero has the diamond lattice and the zigzag edge`, hero.panel && hero.zigzag, JSON.stringify(hero));
+    }
+    await go(page, '/menu');
+    const washes = await page.$$eval('.kasi-wash', (els) => els.length);
+    check('menu has the lattice on the filter bar, every category heading and every card', washes >= 27, `${washes} lattice layers`);
+    const diamonds = await page.$$eval('.kasi-diamond', (els) => els.length);
+    check('menu: a diamond leads each of the six category headings', diamonds === 6, `${diamonds} diamonds`);
+    await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 1 });
+    for (const route of publicRoutes) {
+      await go(page, route);
+      const sidewaysPhone = await page.evaluate(() => ({ inner: window.innerWidth, scroll: document.documentElement.scrollWidth }));
+      check(`no sideways scrolling on ${route} (390px)`, sidewaysPhone.scroll <= sidewaysPhone.inner + 1, JSON.stringify(sidewaysPhone));
+    }
 
     console.log('\nStaff console');
     await page.setViewport({ width: 1440, height: 900 });

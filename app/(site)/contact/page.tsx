@@ -4,7 +4,7 @@ import { ContactForm } from '@/components/contact/ContactForm';
 import { FaqList } from '@/components/contact/FaqList';
 import { OpeningHours } from '@/components/site/OpeningHours';
 import { PageHeader } from '@/components/site/PageHeader';
-import { SocialIcons, hasSocialLinks } from '@/components/site/SocialIcons';
+import { SocialIcons } from '@/components/site/SocialIcons';
 import { SectionHeading } from '@/components/ui/SectionHeading';
 import { BRAND } from '@/lib/config';
 import { getSiteSettings } from '@/lib/settings';
@@ -72,12 +72,10 @@ export default async function ContactPage() {
               </a>
             </div>
             <OpeningHours hours={settings.hours} />
-            {hasSocialLinks(settings.social) ? (
-              <div className="flex flex-col gap-3 border-t border-navy/10 pt-6">
-                <p className="font-semibold text-navy">Follow us</p>
-                <SocialIcons social={settings.social} tone="dark" />
-              </div>
-            ) : null}
+            <div className="flex flex-col gap-3 border-t border-navy/10 pt-6">
+              <p className="font-semibold text-navy">Follow us</p>
+              <SocialIcons social={settings.social} tone="dark" />
+            </div>
           </aside>
         </div>
 

@@ -40,7 +40,7 @@ Until these files exist, the site shows a built-in placeholder mark. The build e
 - **Menu:** Offering / Meals, each of the six categories, Specials.
 - **Home** and **Contact** sit beside the two groups.
 
-The footer uses the same group names with fewer links: Menu (full menu, weekly specials), About (about us, vision and mission, how we started) and Visit & contact, where each line has an icon. Facebook, Instagram and TikTok icons appear under Visit & contact and in the contact panel, but only for links saved in staff Settings. Along the bottom are the FAQ, privacy notice and terms.
+The footer uses the same group names with fewer links: Menu (full menu, weekly specials), About (about us, vision and mission, how we started) and Visit & contact, where each line has an icon. Facebook, Instagram and TikTok icons appear under Visit & contact and in the contact panel. Until the owner saves each business page link in staff Settings, its icon opens a search for Heritage Bites Pretoria on that platform. Along the bottom are the FAQ, privacy notice and terms.
 
 On phones, the bottom bar has Home, About, Menu, Contact and Cart. About and Menu open the same lists as sheets. A back-to-top button appears after scrolling.
 
@@ -60,7 +60,7 @@ The home page has no events, office lunch or table booking offer, and no separat
 - Categories and dishes are in `lib/seed-data.ts`: six categories (as on heritagebites.co.za) and 20 dishes. Each dish has one to four photos.
 - Every product card has a photo carousel with arrows, dots, a counter, swipe and arrow keys. Each dot shows its own photo.
 - The photos are web photos and must be replaced before launch. See `docs/IMAGE_CREDITS.md`.
-- Heritage motifs: a diamond-pattern panel sits in the menu header, and a beaded strip runs under each category heading and each product photo. They are drawn in CSS and SVG (`.kasi-panel` and `.kasi-strip` in `app/globals.css`), so they need no image files.
+- Heritage vectors: one motif set, drawn in CSS and SVG (see `app/globals.css`), so no image files are needed. Every hero (home, About, Menu, Specials, Contact, checkout, search, privacy and terms) has the diamond lattice on the right and the ochre zigzag along the bottom edge. The menu adds a faint lattice to the filter bar, to each category heading (led by a small ochre diamond) and to the corner of each dish card. Beaded strips run under category headings, dish photos, specials photos and the sticky category bar.
 
 ## Ordering and payments
 
@@ -108,7 +108,7 @@ BASE_URL=http://127.0.0.1:3100 npm run test:links
 1. Confirm the prices and special prices (staff Settings and `lib/seed-data.ts`).
 2. Confirm the opening hours (staff Settings).
 3. Paste the Heritage Bites Uber Eats and Mr D store links (staff Settings).
-4. Paste the Facebook, Instagram and TikTok page links (staff Settings, Social media), or leave any of them blank.
+4. Paste the Facebook, Instagram and TikTok page links (staff Settings, Social media). Until then the icons open a search for Heritage Bites Pretoria, which can show other businesses.
 5. Replace the web photos listed in `docs/IMAGE_CREDITS.md` with the owner's own photos.
 6. Add the logo files to `public/brand/` (see "Logo").
 7. Approve the Vision and Mission wording, which is currently a draft (`lib/content.ts`).

@@ -15,6 +15,7 @@ export function Hero({
 }) {
   return (
     <section className="grain relative isolate overflow-hidden bg-navy text-cream">
+      <div aria-hidden="true" className="kasi-panel" />
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_14%_18%,rgba(183,126,35,0.30),transparent_38%),radial-gradient(circle_at_92%_86%,rgba(16,38,77,0.95),transparent_46%)]"
