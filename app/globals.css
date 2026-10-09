@@ -133,6 +133,14 @@
   }
 
   /* Stepped ochre diamonds that fade in from the right edge of a navy header. Decorative only. */
+  /* Woven footer edge: outlined diamonds with transparent fills, so the footer background shows through. */
+  .footer-weave {
+    height: 16px;
+    background-color: transparent;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='16' viewBox='0 0 32 16'><g fill='none' stroke-width='1.2'><path d='M16 .6 L31.4 8 L16 15.4 L.6 8 Z' stroke='%23E2AE5B' stroke-opacity='.85'/><path d='M16 4.4 L27.6 8 L16 11.6 L4.4 8 Z' stroke='%23F8F4EC' stroke-opacity='.4'/></g></svg>");
+    background-size: 32px 16px;
+    background-repeat: repeat-x;
+  }
   .kasi-panel {
     position: absolute;
     top: 0;
