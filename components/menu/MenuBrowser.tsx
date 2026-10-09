@@ -126,7 +126,7 @@ export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
         </div>
       </div>
 
-      <nav aria-label="Menu categories" className="sticky top-[4.5rem] z-30 mt-8 bg-cream/95 backdrop-blur">
+      <nav aria-label="Menu categories" className="sticky top-[4.5rem] z-30 mt-8 border-b border-line bg-cream/95 backdrop-blur">
         <div className="container-hb">
           <div ref={tabRow} className="chip-row py-3 lg:flex-wrap lg:overflow-visible">
             <a
@@ -152,7 +152,6 @@ export function MenuBrowser({ categories }: { categories: MenuCategory[] }) {
             ))}
           </div>
         </div>
-        <div aria-hidden="true" className="kasi-strip" />
       </nav>
 
       {visible.map((category) =>

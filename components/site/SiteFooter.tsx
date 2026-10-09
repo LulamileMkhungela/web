@@ -98,7 +98,8 @@ export function SiteFooter({
         </nav>
       </div>
 
-      <div className="border-t border-white/10">
+      <div aria-hidden="true" className="kasi-strip" />
+      <div>
         <div className="container-hb flex flex-col gap-3 py-5 text-sm text-cream/70 sm:flex-row sm:items-center sm:justify-between">
           <p>© {year} Heritage Bites. All rights reserved.</p>
           <nav aria-label="Help and legal" className="flex flex-wrap gap-x-6 gap-y-2">

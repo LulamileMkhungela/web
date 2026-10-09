@@ -60,7 +60,7 @@ The home page has no events, office lunch or table booking offer, and no separat
 - Categories and dishes are in `lib/seed-data.ts`: six categories (as on heritagebites.co.za) and 20 dishes. Each dish has one to four photos.
 - Every product card has a photo carousel with arrows, dots, a counter, swipe and arrow keys. Each dot shows its own photo.
 - The photos are web photos and must be replaced before launch. See `docs/IMAGE_CREDITS.md`.
-- Heritage vectors: one motif set, drawn in CSS and SVG (see `app/globals.css`), so no image files are needed. Every hero (home, About, Menu, Specials, Contact, checkout, search, privacy and terms) has the diamond lattice on the right and the ochre zigzag along the bottom edge. The menu adds a faint lattice to the filter bar, to each category heading (led by a small ochre diamond) and to the corner of each dish card. Beaded strips run under dish photos, specials photos and the sticky category bar. Category headings have no strip under them.
+- Heritage vectors: one motif set, drawn in CSS and SVG (see `app/globals.css`), so no image files are needed. Every hero (home, About, Menu, Specials, Contact, checkout, search, privacy and terms) has the diamond lattice on the right and the ochre zigzag along the bottom edge. The menu adds a faint lattice to the filter bar, to each category heading (led by a small ochre diamond) and to the corner of each dish card. Beaded strips run under dish photos and specials photos, and in the footer above the copyright line. Category headings and the category bar have none.
 
 ## Ordering and payments
 

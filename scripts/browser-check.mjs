@@ -231,6 +231,7 @@ async function main() {
     const footerIconCount = await page.$$eval('footer nav li svg', (els) => els.length);
     check('footer carries four contact icons and the Facebook, Instagram and TikTok icons', footerIconCount === 7, `${footerIconCount} icons`);
     check('footer edge is the beaded band', Boolean(await page.$('footer .band-beads')));
+    check('footer has the woven strip above the copyright line', (await page.$$('footer .kasi-strip')).length === 1);
     const socialLinks = await page.$$eval('footer a[href*="/search"]', (els) => els.map((e) => e.href));
     check('footer social icons link to a search until a page is saved', socialLinks.length === 3 && socialLinks.some((h) => h.includes('facebook.com')) && socialLinks.some((h) => h.includes('instagram.com')) && socialLinks.some((h) => h.includes('tiktok.com')), JSON.stringify(socialLinks));
 
@@ -238,6 +239,7 @@ async function main() {
     await go(page, '/menu');
     const headingStrips = await page.$$eval('section[id^="category-"] header + .kasi-strip', (els) => els.length);
     check('no horizontal strip under any category heading', headingStrips === 0, `${headingStrips} under headings`);
+    check('the category bar has no strip', (await page.$$('nav[aria-label="Menu categories"] .kasi-strip')).length === 0);
     const dishes = await page.$$eval('article[id^="item-"]', (els) => els.length);
     const photoStrips = await page.$$eval('article[id^="item-"] .kasi-strip', (els) => els.length);
     check('every dish photo carries the beaded strip', dishes > 0 && photoStrips === dishes, `${photoStrips} strips for ${dishes} dishes`);
