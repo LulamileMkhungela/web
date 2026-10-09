@@ -231,7 +231,8 @@ async function main() {
     const footerIconCount = await page.$$eval('footer nav li svg', (els) => els.length);
     check('footer carries four contact icons and the Facebook, Instagram and TikTok icons', footerIconCount === 7, `${footerIconCount} icons`);
     check('footer edge is the beaded band', Boolean(await page.$('footer .band-beads')));
-    check('footer has the woven strip above the copyright line', (await page.$$('footer .kasi-strip')).length === 1);
+    const wovenTop = await page.$eval('footer .kasi-strip', (el) => el.getBoundingClientRect().top - el.closest('footer').getBoundingClientRect().top);
+    check('footer has the woven strip at the top only', (await page.$$('footer .kasi-strip')).length === 1 && wovenTop < 4, `top offset ${Math.round(wovenTop)}px`);
     const socialLinks = await page.$$eval('footer a[href*="/search"]', (els) => els.map((e) => e.href));
     check('footer social icons link to a search until a page is saved', socialLinks.length === 3 && socialLinks.some((h) => h.includes('facebook.com')) && socialLinks.some((h) => h.includes('instagram.com')) && socialLinks.some((h) => h.includes('tiktok.com')), JSON.stringify(socialLinks));
 

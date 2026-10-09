@@ -42,6 +42,7 @@ export function SiteFooter({
   const year = new Date().getFullYear();
   return (
     <footer className="grain relative mt-24 overflow-hidden bg-navy text-cream/85">
+      <div aria-hidden="true" className="kasi-strip" />
       <div className="band-beads" aria-hidden="true" />
       <div className="container-hb grid gap-12 py-16 sm:grid-cols-2 lg:grid-cols-[1.25fr_1fr_1fr_1.2fr] lg:gap-10">
         <div className="flex flex-col gap-5 sm:col-span-2 lg:col-span-1">
@@ -98,8 +99,7 @@ export function SiteFooter({
         </nav>
       </div>
 
-      <div aria-hidden="true" className="kasi-strip" />
-      <div>
+      <div className="border-t border-white/10">
         <div className="container-hb flex flex-col gap-3 py-5 text-sm text-cream/70 sm:flex-row sm:items-center sm:justify-between">
           <p>© {year} Heritage Bites. All rights reserved.</p>
           <nav aria-label="Help and legal" className="flex flex-wrap gap-x-6 gap-y-2">
